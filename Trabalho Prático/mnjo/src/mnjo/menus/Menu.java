@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package mnjo;
+package mnjo.menus;
 
 import java.util.List;
 import java.util.ArrayList;

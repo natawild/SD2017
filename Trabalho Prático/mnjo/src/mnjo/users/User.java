@@ -3,29 +3,31 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package mnjo;
+package mnjo.users;
+
+import java.util.Objects;
 
 /**
  *
  * @author Celia
  */
 
-public abstract class Utilizador {
-
+public class User {
     private String username;
     private String password;
+    private Integer rate;
 
-    public Utilizador() {
-        this.username = "n/a";
-        this.password = "n/a";
+    public User() {
+        this.username = "";
+        this.password = "";
     }
 
-    public Utilizador(Utilizador c) {
+    public User(User c) {
         this.username = c.getUsername();
         this.password = c.getPassword();
     }
 
-    public Utilizador(String username, String password) {
+    public User(String username, String password) {
         this.username = username;
         this.password = password;
     }
@@ -46,6 +48,7 @@ public abstract class Utilizador {
         this.password = password;
     }
 
+    @Override
     public String toString() {
         StringBuilder string = new StringBuilder();
         string.append("Nome: ");
@@ -55,6 +58,7 @@ public abstract class Utilizador {
         return string.toString();
     }
 
+    @Override
     public boolean equals(Object obj) {
         if (obj == this) {
             return true;
@@ -62,11 +66,23 @@ public abstract class Utilizador {
         if (obj == null || obj.getClass() != this.getClass()) {
             return false;
         }
-        Utilizador u = (Utilizador) obj;
+        User u = (User) obj;
         return u.getUsername().equals(this.username) && u.getPassword().equals(this.password);
 
     }
 
-    public abstract Utilizador clone();
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 41 * hash + Objects.hashCode(this.username);
+        hash = 41 * hash + Objects.hashCode(this.password);
+        hash = 41 * hash + Objects.hashCode(this.rate);
+        return hash;
+    }
 
+
+    public User clone(){
+        return new User(this);
+    }
+        
 }

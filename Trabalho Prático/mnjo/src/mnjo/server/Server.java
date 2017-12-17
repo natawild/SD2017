@@ -3,26 +3,34 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package mnjo;
+package mnjo.server;
 
+import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.Socket;
 
 /**
  *
  * @author Celia
  */
-public class Servidor {
+public class Server {
     private ServerSocket serverSocket; 
-    private int porta;
+    private int port;
     
-    public Servidor(int porta){
-        this.porta=porta; 
+    public Server(int port){
+        this.port=port; 
     }
     
-    
-    public static void main(String[] args){
-        Servidor s = new Servidor(118000);
+    public void startServer() throws IOException{
+        serverSocket = new ServerSocket(port);
     }
     
+    public void closeServer() throws IOException {
+        serverSocket.close();
+    }
+    
+    public Socket accept() throws IOException{
+        return serverSocket.accept();
+    }
     
 }
