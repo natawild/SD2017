@@ -15,7 +15,8 @@ import java.util.logging.Logger;
  *
  * @author luisoliveira
  */
-public class ClientServer {
+
+public class MainClient {
     
     public static void main(String[] args) {
         Client c = new Client("localhost", 12345);
