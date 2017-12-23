@@ -32,5 +32,23 @@ public class Server {
     public Socket accept() throws IOException{
         return serverSocket.accept();
     }
+
+    public ServerSocket getServerSocket() {
+        return serverSocket;
+    }
+
+    public void setServerSocket(ServerSocket serverSocket) {
+        this.serverSocket = serverSocket;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+    
+    
     
 }

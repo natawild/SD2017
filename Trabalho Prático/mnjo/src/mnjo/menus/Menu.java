@@ -15,6 +15,15 @@ public class Menu {
     private String menu;
     private int op;
 
+    public Menu(String menu, int op) {
+        this.menu = menu;
+        this.op = op;
+    }
+    
+     public Menu(int op) {
+        this.op = op;
+    }
+
     /** Apresentar o menu */
     public void showMenu() {
         switch(op){

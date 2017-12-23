@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
+import mnjo.exceptions.InvalidCredentialsException;
 
 /**
  *
@@ -60,7 +61,28 @@ public class GameManager {
         }
     }
 
-    
+    public User login(String username, String password) throws InvalidCredentialsException{
+        User user = null;
+        this.usersLock.lock();
+        try{
+            user = users.get(username);
+            if(user != null){
+                if(user.getPassword().equals(password)){
+                    return user;
+                }
+                else {
+                   throw new InvalidCredentialsException("Cradenciais incorrectas"); 
+                }
+            }
+            else {
+                throw new InvalidCredentialsException("Cradenciais incorrectas");
+            }
+        }
+        finally{
+            this.usersLock.unlock();
+        }
+        
+    }
     
     public void deleteUser(User user){
         //TODO: CUidado com este codigo se tiveres varias thereds podes ter problemas. O que fazer aqui? :)

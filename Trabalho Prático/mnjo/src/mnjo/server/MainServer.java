@@ -6,9 +6,8 @@
 package mnjo.server;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.net.Socket;
-import mnjo.server.Server;
+import mnjo.users.GameManager;
+import mnjo.users.User;
 
 /**
  *
@@ -21,18 +20,18 @@ public class MainServer {
      */
     public static void main(String[] args) throws IOException{
        Server server = new Server(12345);
+       int clientNumber = 0;
+       GameManager gameManager = new GameManager();
         
-        try {
-            server.startServer();
+       //Dados de teste
+       User user1 = new User ("luis", "luis");
+       gameManager.registerUser(user1);
+        
+       try {
+           server.startServer();
             
             while (true) {
-                Socket socket = server.accept();
-                try {
-                    PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-                    out.println("teste");
-                } finally {
-                    socket.close();
-                }
+                new ServerThread(gameManager ,server.accept(), clientNumber++).start();
             }
         }
         finally {
