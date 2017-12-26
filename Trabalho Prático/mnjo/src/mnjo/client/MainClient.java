@@ -6,6 +6,8 @@
 package mnjo.client;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -20,7 +22,7 @@ public class MainClient {
             c.initConnection();
             c.startProtocol();
         } catch (IOException ex) {
-            System.out.println("Erro: " + ex);
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, "Erro ao iniciar cliente: ", ex);
         }
 
     }

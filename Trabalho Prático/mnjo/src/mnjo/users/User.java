@@ -20,16 +20,19 @@ public class User {
     public User() {
         this.username = "";
         this.password = "";
+        this.rate=0;
     }
 
     public User(User c) {
         this.username = c.getUsername();
         this.password = c.getPassword();
+        this.rate=c.getRate();
     }
 
     public User(String username, String password) {
         this.username = username;
         this.password = password;
+        this.rate=0;
     }
 
     public String getUsername() {
@@ -48,13 +51,23 @@ public class User {
         this.password = password;
     }
 
+    public Integer getRate() {
+        return rate;
+    }
+
+    public void setRate(Integer rate) {
+        this.rate = rate;
+    }
+    
+    
+
     @Override
     public String toString() {
         StringBuilder string = new StringBuilder();
-        string.append("Nome: ");
-        string.append(this.username + '\n');
         string.append("Username: ");
-        string.append(this.password + '\n');
+        string.append(username).append("\n");
+        string.append("password: ");
+        string.append(password).append("\n");
         return string.toString();
     }
 

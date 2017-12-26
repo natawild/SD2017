@@ -9,12 +9,12 @@ package mnjo.exceptions;
  *
  * @author celia
  */
-public class InvalidCredentialsException extends Exception {
-    public InvalidCredentialsException() {
+public class DuplicatedUserException extends Exception {
+    public DuplicatedUserException() {
         super();
     }
 
-    public InvalidCredentialsException(String message) {
+    public DuplicatedUserException(String message) {
         super(message);
     }
       

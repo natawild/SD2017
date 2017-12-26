@@ -10,6 +10,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import mnjo.client.Client;
+import mnjo.exceptions.DuplicatedUserException;
 import mnjo.exceptions.InvalidCredentialsException;
 import mnjo.users.GameManager;
 import mnjo.users.User;
@@ -22,10 +26,8 @@ public class ServerThread extends Thread{
     private Socket socket ;
     private int clientNumber;
     private User user;
-    
     private BufferedReader in;
     private PrintWriter out;
-    
     private GameManager gameManager;
     
 
@@ -33,6 +35,7 @@ public class ServerThread extends Thread{
         this.gameManager = gameManager;
         this.socket = socket;
         this.clientNumber= clientNumber;
+        this.user = null;
     }
 
     public Socket getSocket() {
@@ -85,50 +88,117 @@ public class ServerThread extends Thread{
     
     
     
+    @Override
     public void run() {
         try {
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out = new PrintWriter(socket.getOutputStream(), true);
 
             // Send a welcome message to the client.
-            out.println("Numero do cliente" + clientNumber);
-            out.println("Selecione una opção ou . para sair");
-            out.println(0);
+            out.println("Numero do cliente #" + clientNumber);
             
-            while (true) {
-               int selectedMenu = Integer.valueOf(in.readLine());
-               if(selectedMenu == 1){
-                   login();
-               }
+            int selectedMenu = Integer.valueOf(in.readLine());            
+            while (true && selectedMenu > 0) {
+               protocolOptions(selectedMenu);     
+               selectedMenu = Integer.valueOf(in.readLine());
             }
         } catch (IOException e) {
-            System.out.print("Erro com o cliente " + clientNumber + ": " + e + '\n');
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, "Erro com o cliente " + clientNumber, e);
         } finally {
             try {
                 socket.close();
             } catch (IOException e) {
-                System.out.print("Nao é possivel fazer o socket: " + e + '\n');
+                Logger.getLogger(Client.class.getName()).log(Level.SEVERE, "Erro com o cliente " + clientNumber, e);
             }
-            System.out.print("Coneção com o cliente " + clientNumber + " fechada");
+            Logger.getLogger(Client.class.getName()).log(Level.INFO, "Cone\u00e7\u00e3o com o cliente {0} fechada", clientNumber);
         }
     }
     
+    private void protocolOptions (int selectedMenu){
+        switch(selectedMenu){
+            case 1:  login();
+                    break;
+            case 2: register();
+                    break;
+            case 3: loggedMenus();
+                    break;
+            case 4: logout();
+                    break;
+            default: 
+                    break;
+        }
+    }
+    
+    private void logout(){
+        this.user = null;    
+    }
+    
     private void login(){
+        int retryNumber = 0;
+       
         try {
-            out.println("Username: ");
-            String username = in.readLine();
-            out.println("password");
-            String password = in.readLine();
-            
-            try {
-                user = gameManager.login(username, password);
-            } catch (InvalidCredentialsException ex) {
-               System.out.println("Erro nas cradenciais do cliente " + clientNumber + ": " + ex + '\n');
+            while (user == null && retryNumber < 3){
+                out.println("Username: ");
+                String username = in.readLine();
+                out.println("password");
+                String password = in.readLine();
+
+                try {
+                    user = gameManager.login(username, password);
+                } catch (InvalidCredentialsException ex) {
+                   Logger.getLogger(Client.class.getName()).log(Level.INFO, "Erro nas cradenciais do cliente " + clientNumber, ex);
+                }
+                
+                if(user != null){
+                  out.println("sucess");
+                }
+                else {
+                   out.println("fail"); 
+                   retryNumber++;
+                }
             }
         } catch (IOException ex) {
-           System.out.println("Erro ao tentar ler username e password do cliente " + clientNumber + ": " + ex + '\n');
+           Logger.getLogger(Client.class.getName()).log(Level.SEVERE, "Erro ao tentar ler username e password do cliente " + clientNumber , ex);
         }
         
+    }
+    
+    public void register(){     
+        User registedUser = null;
+        int retryNumber = 0;
+        while (registedUser == null && retryNumber < 3){
+            try {
+                out.println("Username: ");
+                String username;
+                username = in.readLine();
+                out.println("password");
+                String password = in.readLine();
+                registedUser = gameManager.registerUser(username, password);
+                Logger.getLogger(ServerThread.class.getName()).log(Level.INFO, "Utilizador " + username + " registado");
+            } catch (DuplicatedUserException ex) {
+                Logger.getLogger(Client.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            } catch (IOException ex) {
+                Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, "Erro ao tentar registar utilizador", ex);
+            }
+            
+            if(registedUser != null){
+                out.println("sucess");
+            }
+            else {
+                out.println("fail"); 
+                retryNumber++;
+            }   
+        }
+        
+        for(User user2: gameManager.getUsers().values()){
+            System.out.print(user2);
+        }  
+    }
+    
+    public void loggedMenus(){
+        if(user != null){
+            
+        }
     }
     
 }

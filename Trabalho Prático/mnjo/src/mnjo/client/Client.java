@@ -12,6 +12,8 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Objects;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import mnjo.menus.Menu;
 
 /**
@@ -22,16 +24,18 @@ public class Client {
     private int port;
     private String hostname;
     private Socket clientSocket;
-    
     private BufferedReader in;
     private PrintWriter out;
     private Scanner scanner;
+    private boolean logged;
 
     
     public Client(String hostname, int port){
         this.hostname=hostname;
         this.port=port; 
-        this.clientSocket = null;
+        this.clientSocket = null; 
+        this.scanner = null;
+        this.logged = false;
     }
 
     public int getPort() {
@@ -73,9 +77,24 @@ public class Client {
     public void setOut(PrintWriter out) {
         this.out = out;
     }
-    
-    
 
+    public Scanner getScanner() {
+        return scanner;
+    }
+
+    public void setScanner(Scanner scanner) {
+        this.scanner = scanner;
+    }
+
+    public boolean isLogged() {
+        return logged;
+    }
+
+    public void setLogged(boolean logged) {
+        this.logged = logged;
+    }
+
+    
     @Override
     public int hashCode() {
         int hash = 7;
@@ -106,20 +125,135 @@ public class Client {
     public void startProtocol() throws IOException{
         in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
         out = new PrintWriter(clientSocket.getOutputStream(), true);
-        Scanner scanner = new Scanner(System.in);
+        scanner = new Scanner(System.in);
         
+        //mensagem de boas vindas
         System.out.println(in.readLine());
-        System.out.println(in.readLine());
         
-        int seletectMenu = Integer.valueOf(in.readLine());
-        Menu menu = new Menu(seletectMenu);
-        menu.showMenu();
-        
-        out.println(scanner.next());
+        //Iniciar menus
+        initMenus();
     }
     
-    private void MenuInicial(){
-        out.println(scanner.next());
+    public void initMenus(){
+        Menu menu = new Menu(0);
+        menu.showMenu();
+        
+        //selecionar opção do menu
+        String option = scanner.next();
+        out.println(option);
+        
+        switch(option){
+           case "0":  close();
+                    break;  
+           case "1": login();
+                    break;
+           case "2": register(option);
+                    break;
+           default: System.out.println("Opção invalida");
+                    initMenus();
+                    break;
+        }
+    }
+    
+    public void login(){
+        String loginMessage = "fail";
+        int retryNumber = 0;
+        while (loginMessage.equals("fail") && retryNumber < 3){
+            try {
+                System.out.println(in.readLine());
+                String username = scanner.next();
+                out.println(username);
+
+                System.out.println(in.readLine());
+                String password = scanner.next();
+                out.println(password);
+                
+                loginMessage = in.readLine();
+                if(loginMessage.equals("sucess")){
+                    logged= true;
+                }
+                else {
+                    System.out.println("Cradencias erradas ou utilizador nao registado");
+                    retryNumber++;
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(Client.class.getName()).log(Level.SEVERE, "Erro ao tentar efetuar login", ex);
+            }
+        }
+        
+        if(logged){
+            loggedMenus();
+        }
+        else {
+            initMenus();
+        }
+    }
+    
+     public void loggedMenus(){
+        Menu menu = new Menu(2);
+        menu.showMenu();
+        
+        //selecionar opção do menu
+        String option = scanner.next();
+        out.println(option);
+        
+        switch(option){
+           case "0":  logout();
+                    break;  
+//           case "1": login();
+//                    break;
+//           case "2": register(option);
+//                    break;
+           default: System.out.println("Opção invalida");
+                    loggedMenus();
+                    break;
+        }   
+    }
+     
+    public void logout (){
+        this.logged = false;
+        out.println(4);
+        initMenus();
+    }
+    
+    public void register(String option){
+        String registerMessage = "fail";
+        int retryNumber = 0;
+        while (registerMessage.equals("fail") && retryNumber < 3){
+            try {
+                System.out.println(in.readLine());
+                String username = scanner.next();
+                out.println(username);
+
+                System.out.println(in.readLine());
+                String password = scanner.next();
+                out.println(password);
+                
+                registerMessage = in.readLine();
+                if(registerMessage.equals("fail")){
+                    System.out.println("Problema ao tentar registar. Verifique se estáa usar as cradenciais correctas");
+                    retryNumber++;
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(Client.class.getName()).log(Level.SEVERE, "Erro ao tentar efetuar login", ex);
+            }
+        }
+        
+        initMenus();
+    }
+    
+    public void close(){
+        out.println("0");
+        
+        this.scanner.close(); 
+        try {
+            in.close();
+            out.close();
+            clientSocket.close();
+        } catch (IOException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, "Erro ao fechar cliente", ex);
+        }
+      
     }
     
 }

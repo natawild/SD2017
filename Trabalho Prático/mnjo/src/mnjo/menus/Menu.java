@@ -29,6 +29,7 @@ public class Menu {
         switch(op){
             case 0: System.out.println("************* MENU ****************\n"+
                                        "* 1 - Iniciar Sessao              *\n"+
+                                       "* 2 - Registar                    *\n"+
                                        "* 0 - Sair                        *\n"+
                                        "***********************************\n");
                     break;
@@ -38,7 +39,7 @@ public class Menu {
                     break;
             case 2: System.out.println("************* Equipas ************\n"+
                                        "* 1 - Entrar na Equipa             *\n"+
-                                       "* 0 - Terminar Sessao             *\n"+
+                                       "* 0 - Logout                       *\n"+
                                        "***********************************\n");
                     break;
         }
