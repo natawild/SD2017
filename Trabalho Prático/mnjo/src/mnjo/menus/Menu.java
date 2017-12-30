@@ -33,15 +33,23 @@ public class Menu {
                                        "* 0 - Sair                        *\n"+
                                        "***********************************\n");
                     break;
-            case 1: System.out.println("************* Escolher Heroi ***********\n"+
-                                       "* 0 - Terminar Sessao             *\n"+
-                                       "***********************************\n");
+            case 1: System.out.println("******************** Menu Jogo *************\n"+
+                                        "* 1 - Escolher Heroi                       *\n"+
+                                        "* 2 - Visualizar Constituiçao da Equipa    *\n"+
+                                       "*********************************************\n");
                     break;
             case 2: System.out.println("************* Equipas ************\n"+
                                        "* 1 - Entrar na Equipa             *\n"+
                                        "* 0 - Logout                       *\n"+
                                        "***********************************\n");
-                    break;
+                break;
+            case 3:
+                System.out.println("************* Menu Jogo ************\n"
+                        + "* 1 - Confirmar heroi e jogar              *\n"
+                        + "* 2 - Escolher outro heroi                  *\n"
+                        + "* 3 - Visualizar Equipa                  *\n"
+                        + "***********************************\n");
+                break;
         }
     }
 

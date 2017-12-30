@@ -9,9 +9,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import mnjo.exceptions.DuplicatedUserException;
 import mnjo.exceptions.InvalidCredentialsException;
+import mnjo.server.MainServer;
 
 /**
  *
@@ -23,13 +27,41 @@ public class GameManager {
     
     /*Map com todos os utilizadores registados*/
     private Map<String, User> users;
+    
     /*Lista com os herois*/
     private List<Hero> heroes; 
     private ReentrantLock usersLock;
+    private Map<Integer,List<User>> wantGame; 
+    private ReentrantLock wantGameLock; 
+    private Condition wantGameCondition; 
+    private int gameNumber;
+    private Map<Integer, Game> games; 
 
     public GameManager() {
         this.users = new HashMap<>();
+        this.wantGame=new HashMap<>();
         this.usersLock = new ReentrantLock();
+        this.wantGameLock = new ReentrantLock();
+        this.wantGameCondition = wantGameLock.newCondition(); 
+        this.gameNumber=1;
+        this.games= new HashMap<>();
+        this.heroes=new ArrayList<>(); 
+    }
+
+    public Map<Integer, Game> getGames() {
+        return games;
+    }
+
+    public void setGames(Map<Integer, Game> games) {
+        this.games = games;
+    }
+
+    public int getGameNumber() {
+        return gameNumber;
+    }
+
+    public void setGameNumber(int gameNumber) {
+        this.gameNumber = gameNumber;
     }
     
     public GameManager(Map<String, User> users) {
@@ -45,6 +77,41 @@ public class GameManager {
         //Mesma coisa que no getDb. Em POO devias primeiro criar uma copia do MAP e só depois fazer this.db = copia_da_db_passada_em_paramtro
         this.users = users;
     }
+
+    public List<Hero> getHeroes() {
+        return heroes;
+    }
+    
+    public List<Hero> getHeroesClone (){
+        List<Hero> clonedList = new ArrayList<>();
+        for(Hero h: heroes){
+            clonedList.add(h.clone());
+        }
+        return clonedList; 
+    }
+
+    public void setHeroes(List<Hero> heroes) {
+        this.heroes = heroes;
+    }
+
+    public Map<Integer, List<User>> getWantGame() {
+        return wantGame;
+    }
+
+    public void setWantGame(Map<Integer, List<User>> wantGame) {
+        this.wantGame = wantGame;
+    }
+    
+    public void addHero (Hero hero){
+        this.heroes.add(hero); 
+    }
+    
+    private int incrementorGameNumber(){
+        int i = gameNumber;
+        gameNumber++; 
+        return i; 
+    }
+    
     
     /**
      * Adicionar um utilizador a base de dados
@@ -123,6 +190,102 @@ public class GameManager {
         }
     }
     
+    //depois de adicionar o utilizador a esta lista devem ser acordadas as threads que 
+    //estão á espera para formar equipa
+    private void addPlayer(User user){
+        List<User> usersWithSameRate = this.wantGame.get(user.getRate()); 
+        if(usersWithSameRate==null){
+            usersWithSameRate= new ArrayList<>();
+            this.wantGame.put(user.getRate(), usersWithSameRate);
+        }
+        usersWithSameRate.add(user);         
+    }
+    
+    public void findTeam(User user){
+        this.wantGameLock.lock();
+        boolean haveTeam=false;  
+        List<User> team = new ArrayList<>(); 
+        team.add(user);
+        try{
+            searchForTeam(user, team); 
+            searchForTeamWithVariation(user, team, -1);
+            searchForTeamWithVariation(user, team, +1);
+   
+            if (isTeamFull(team)) {
+                haveTeam = updateWaitingTeamStatus(team);   
+            }
+            if(notHaveTeam(haveTeam)){
+                this.addPlayer(user);
+                user.setWaiting(true);
+                while(user.getWaiting()==true){
+                    this.wantGameCondition.await();
+                }
+            }
+            else{
+                saveTeam(team);
+                this.wantGameCondition.signalAll();
+            }
+        }
+        catch (InterruptedException ex) {        
+            Logger.getLogger(GameManager.class.getName()).log(Level.SEVERE, "Erro ao tentar adormecer Thread", ex);
+        }        
+        finally{
+            this.wantGameLock.unlock();    
+        }
+    }
+
+    private static boolean isTeamFull(List<User> team) {
+        return team.size() == MainServer.TEAM_SIZE;
+    }
+
+    private static boolean notHaveTeam(boolean haveTeam) {
+        return haveTeam==false;
+    }
+
+    private boolean updateWaitingTeamStatus(List<User> team) {
+        boolean haveTeam;
+        haveTeam = true;
+        for(User u : team){
+            u.setWaiting(false);
+            List<User> list = wantGame.get(u.getRate());
+            list.remove(u);
+        }
+        return haveTeam;
+    }
+
+    private void searchForTeam(User user, List<User> team) {
+        List<User> usersWithSameRate = this.wantGame.get(user.getRate());
+        int usersWithSameRateSize = 0;
+        if(usersWithSameRate != null){
+            usersWithSameRateSize = usersWithSameRate.size();
+        }
+        if(usersWithSameRateSize>0){
+            for(int i =0; i<usersWithSameRateSize && team.size()<MainServer.TEAM_SIZE; i++){
+                User u = usersWithSameRate.get(i);
+                team.add(u);
+            }
+        }
+    }
+
+    private void searchForTeamWithVariation(User user, List<User> team, int variation) {
+        List<User> usersWithVariationRate = this.wantGame.get(user.getRate() + variation);
+        int usersWithVariationRateSize=0;
+        if(usersWithVariationRate!=null){
+            usersWithVariationRateSize = usersWithVariationRate.size();
+        }
+        if(team.size()<MainServer.TEAM_SIZE && usersWithVariationRateSize>0){
+            for(int i =0; i< MainServer.TEAM_SIZE - team.size() && i < usersWithVariationRateSize; i++){
+                User u = usersWithVariationRate.get(i);
+                team.add(u);
+            }
+        }
+    }
+    
+    //depois de conseguir formar uma equipa as threads que estão á espera de inserir jogadores 
+    //à variavel wantGame devem ser acordadas 
+    public void createTeam(){
+        
+    }
     
     
     public List<Hero> initHeroes (){
@@ -130,5 +293,23 @@ public class GameManager {
         heroes.forEach(listaHerois::add);
         return listaHerois; 
     }
+
+    private void saveTeam(List<User> team) {
+        List<User> teamA = new ArrayList<>();  
+        List<User> teamB = new ArrayList<>();  
+        
+        int gameId=incrementorGameNumber();
+        
+        for(int i=0; i<team.size();i=i+2){
+            team.get(i).setGameId(gameId);
+            teamA.add(team.get(i));
+            team.get(i+1).setGameId(gameId);
+            teamB.add(team.get(i+1));
+        }
+        Game game = new Game(gameId, teamA, teamB, getHeroesClone()); 
+        this.games.put(game.getId(), game); 
+        
+    }
+    
      
 }

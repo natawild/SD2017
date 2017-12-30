@@ -8,6 +8,8 @@ package mnjo.server;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.logging.Level;
@@ -15,6 +17,7 @@ import java.util.logging.Logger;
 import mnjo.client.Client;
 import mnjo.exceptions.DuplicatedUserException;
 import mnjo.exceptions.InvalidCredentialsException;
+import mnjo.users.Game;
 import mnjo.users.GameManager;
 import mnjo.users.User;
 
@@ -29,6 +32,8 @@ public class ServerThread extends Thread{
     private BufferedReader in;
     private PrintWriter out;
     private GameManager gameManager;
+    private ObjectOutputStream oos ; 
+    private ObjectInputStream ois; 
     
 
     public ServerThread(GameManager gameManager, Socket socket, int clientNumber) {
@@ -93,6 +98,8 @@ public class ServerThread extends Thread{
         try {
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out = new PrintWriter(socket.getOutputStream(), true);
+            oos = new ObjectOutputStream(socket.getOutputStream());
+            ois = new ObjectInputStream(socket.getInputStream());
 
             // Send a welcome message to the client.
             out.println("Numero do cliente #" + clientNumber);
@@ -115,17 +122,27 @@ public class ServerThread extends Thread{
     }
     
     private void protocolOptions (int selectedMenu){
-        switch(selectedMenu){
-            case 1:  login();
+        if(user==null){
+            switch(selectedMenu){
+                case 1:  login();
+                        break;
+                case 2: register();
+                        break;
+                default: 
+                        break;
+            }
+        }
+        else {
+            switch (selectedMenu) {
+                case 1:
+                    initGame();
                     break;
-            case 2: register();
+                case 0:
+                    logout();
                     break;
-            case 3: loggedMenus();
+                default:
                     break;
-            case 4: logout();
-                    break;
-            default: 
-                    break;
+            }
         }
     }
     
@@ -188,16 +205,90 @@ public class ServerThread extends Thread{
                 out.println("fail"); 
                 retryNumber++;
             }   
-        }
-        
-        for(User user2: gameManager.getUsers().values()){
-            System.out.print(user2);
-        }  
+        }       
     }
     
-    public void loggedMenus(){
-        if(user != null){
-            
+    public void initGame(){
+        gameManager.findTeam(user);
+        //mandar mensagem para ciente a dzer que ja tem equipa
+        out.println("success");
+        Game game = gameManager.getGames().get(user.getGameId());
+        try {
+            //mandar jogo para o cliente
+            oos.writeObject(game);
+            gameMenu();
+        } catch (IOException ex) {
+            Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+    }
+
+    private void gameMenu() throws IOException {
+        //esperar pelo opcao do cliente
+        String option = in.readLine();
+        switch(option){
+            case "1": chooseHero();
+                break;
+            case "2": seeTeam(); 
+                break;
+            default: gameMenu();
+                break;
+        }
+        //consoante a opçcao do cliente executar o que pediu
+    }
+    
+    private void chooseHero() {
+        Game game = gameManager.getGames().get(user.getGameId()); 
+        try { 
+            oos.writeObject(game.getHeroes());
+            String inHero = in.readLine(); 
+            boolean success = game.selectHero(inHero, user); 
+            if(success){
+                out.println("success");
+                heroMenu();
+            }
+            else {
+                out.println("fail");   
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, "Erro ao tentar enviar a lista de herois", ex);
+        }
+        
+    }
+    
+    private void heroMenu() throws IOException {
+        //esperar pelo opcao do cliente
+        String option = in.readLine();
+        switch(option){
+           case "1": confirmHero();
+                    break;  
+           case "2": changeHero();
+                    break;
+           case "3": seeMyTeam();
+                    break;
+           default: heroMenu();
+                    break;
+        }   
+        //consoante a opçcao do cliente executar o que pediu
+    }
+    
+     private void seeTeam() {
+        
+    }
+
+    private void confirmHero() {
+    }
+
+    private void changeHero() {
+    }
+
+    private void seeMyTeam() {
+        Game game = gameManager.getGames().get(user.getGameId()); 
+        try {
+            oos.writeObject(game);
+            heroMenu(); 
+        } catch (IOException ex) {
+            Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, "Erro ao tentar enviar jogo", ex);
         }
     }
     

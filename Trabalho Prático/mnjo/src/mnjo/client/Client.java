@@ -8,19 +8,25 @@ package mnjo.client;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.List;
 import java.util.Objects;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import mnjo.menus.Menu;
+import mnjo.users.Game;
+import mnjo.users.Hero;
+import mnjo.users.User;
 
 /**
  *
  * @author Celia
  */
-public class Client {
+public class Client extends Thread{
     private int port;
     private String hostname;
     private Socket clientSocket;
@@ -28,6 +34,10 @@ public class Client {
     private PrintWriter out;
     private Scanner scanner;
     private boolean logged;
+    private User user; 
+    private ObjectOutputStream oos ; 
+    private ObjectInputStream ois; 
+    
 
     
     public Client(String hostname, int port){
@@ -36,6 +46,15 @@ public class Client {
         this.clientSocket = null; 
         this.scanner = null;
         this.logged = false;
+    }
+    
+    public Client(String hostname, int port, String username, String password){
+        this.hostname=hostname;
+        this.port=port; 
+        this.clientSocket = null; 
+        this.scanner = null;
+        this.logged = false;
+        this.user= new User(username, password); 
     }
 
     public int getPort() {
@@ -94,6 +113,14 @@ public class Client {
         this.logged = logged;
     }
 
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
     
     @Override
     public int hashCode() {
@@ -126,6 +153,8 @@ public class Client {
         in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
         out = new PrintWriter(clientSocket.getOutputStream(), true);
         scanner = new Scanner(System.in);
+        oos = new ObjectOutputStream(clientSocket.getOutputStream());
+        ois = new ObjectInputStream(clientSocket.getInputStream());
         
         //mensagem de boas vindas
         System.out.println(in.readLine());
@@ -134,10 +163,24 @@ public class Client {
         initMenus();
     }
     
+    public void joinGameBoot() throws IOException{
+        in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+        out = new PrintWriter(clientSocket.getOutputStream(), true);
+        oos = new ObjectOutputStream(clientSocket.getOutputStream());
+        ois = new ObjectInputStream(clientSocket.getInputStream());
+        
+        //mensagem de boas vindas
+        System.out.println(in.readLine());
+        
+        this.executeLoginBoot();
+        
+    }
+    
+   
+    
     public void initMenus(){
         Menu menu = new Menu(0);
         menu.showMenu();
-        
         //selecionar opção do menu
         String option = scanner.next();
         out.println(option);
@@ -153,6 +196,28 @@ public class Client {
                     initMenus();
                     break;
         }
+    }
+    
+    public void executeLoginBoot(){
+        out.println("1");
+        loginBoot();
+        initGameBoot(); 
+    }
+    
+    public void loginBoot(){
+        try {
+                in.readLine();
+                out.println(user.getUsername());
+
+                in.readLine();
+                out.println(user.getPassword());
+                
+                in.readLine();
+                logged= true;        
+            } catch (IOException ex) {
+                Logger.getLogger(Client.class.getName()).log(Level.SEVERE, "Erro ao tentar efetuar login", ex);
+            }
+        
     }
     
     public void login(){
@@ -171,6 +236,7 @@ public class Client {
                 loginMessage = in.readLine();
                 if(loginMessage.equals("sucess")){
                     logged= true;
+                    user= new User(username, password);
                 }
                 else {
                     System.out.println("Cradencias erradas ou utilizador nao registado");
@@ -189,6 +255,23 @@ public class Client {
         }
     }
     
+    public void initGameBoot(){
+        out.println("1");
+        try {
+            in.readLine();
+            System.out.println("tem equipa #");
+            Game game = (Game) ois.readObject(); 
+            printTeam(game);
+            //TODO: alterar metodo a baixo para nao imprimir menus para a consola
+            gameMenu();
+        } catch (IOException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, "Erro ao tentar ler o socket", ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, "Erro ao tentar ler o objeto Game", ex);
+        }
+        
+    }
+    
      public void loggedMenus(){
         Menu menu = new Menu(2);
         menu.showMenu();
@@ -200,10 +283,8 @@ public class Client {
         switch(option){
            case "0":  logout();
                     break;  
-//           case "1": login();
-//                    break;
-//           case "2": register(option);
-//                    break;
+           case "1": initGame();
+                    break;
            default: System.out.println("Opção invalida");
                     loggedMenus();
                     break;
@@ -212,7 +293,6 @@ public class Client {
      
     public void logout (){
         this.logged = false;
-        out.println(4);
         initMenus();
     }
     
@@ -253,7 +333,173 @@ public class Client {
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, "Erro ao fechar cliente", ex);
         }
-      
     }
     
+    public void initGame(){
+        try {
+            String serverMessage = in.readLine();
+            if(serverMessage.equals("success")){
+                System.out.println("Já tem equipa");
+                Game game = (Game) ois.readObject(); 
+                printTeam(game);
+                gameMenu();
+            }
+            else{
+                loggedMenus();       
+            }
+            
+            //esperar que o servidor lhe envie uma mensagem a dizer que tem uma equipa formada
+            //mostra menu com opçoes para o cliente
+            //enviar a opçao escolhida pelo cliente ao servidor
+        } catch (IOException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, "Erro ao fazer cast do objecto Game", ex);
+        }
+    }
+    
+    public void gameMenu(){
+        Menu menu = new Menu(1);
+        menu.showMenu();
+        //selecionar opção do menu
+        String option = scanner.next();
+        out.println(option);
+        
+        switch(option){
+           case "1": chooseHero();
+                    break;  
+           case "2": seeTeam();
+                    break;
+           default: System.out.println("Opção invalida");
+                    gameMenu();
+                    break;
+        }   
+    }
+    
+    
+
+    private void printTeam(Game game) {
+        if(game.getTeamA().contains(this.user)){
+            System.out.println(); 
+            printUserTeam("A sua equipa é constituida por: ", game.getTeamA(), "A equipa adversária é constituida por: ", game.getTeamB());
+        }
+        else{
+            printUserTeam("A sua equipa é constituida por: ", game.getTeamB(), "A equipa adversária é constituida por: ", game.getTeamA());
+        }
+    }
+
+    private void printUserTeam(String message1, List<User> team1, String message2,  List<User> team2 ) {
+        System.out.println(message1); 
+        for(User u : team1){
+            System.out.print(u.printUser());
+            System.out.print(" | ");
+        }
+        System.out.println("\n" + message2); 
+        for(User u : team2){
+            System.out.print(u.printUser());
+            System.out.print(" | ");
+        }
+        System.out.println();
+    }
+    
+    private void printMyTeam(String message, List<User> team){
+        System.out.println(message); 
+        for(User u : team){
+            System.out.print(u.printUser());
+            System.out.print(" | ");
+        }
+    }
+    
+    @Override
+    public void run() {
+        try {
+            initConnection();
+            joinGameBoot();
+        } catch (IOException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, "erro ao tentar executar cliente teste", ex);
+        }   
+    } 
+
+    private void chooseHero() {
+        try {
+            List<Hero> heroes = (List<Hero>) ois.readObject();
+            int i=0;
+            System.out.println("Escolha um dos seguintes herois:");
+            for(Hero h: heroes){
+                System.out.println(i+ " - "+h.getName());
+                i++;
+            }
+            int option = Integer.valueOf(scanner.next());
+            
+            while(option<0 && option>=heroes.size()){
+                System.out.println("Opção inválida. Insira novamente a opção");
+                option = Integer.valueOf(scanner.next());
+            }
+            out.println(option);
+            String messageSuccess = in.readLine();
+            if(messageSuccess.equals("success")){
+                heroMenu(); 
+            }
+            else{
+                
+            }
+            
+        } catch (IOException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, "Erro ao tentar ler a lista de herois", ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, "Erro ao tentar ler a lista de heois", ex);
+        }
+    }
+    
+       public void heroMenu() {
+        Menu menu = new Menu(3);
+        menu.showMenu();
+        //selecionar opção do menu
+        String option = scanner.next();
+        out.println(option);
+
+        switch (option) {
+            case "1":
+                confirmHero();
+                break;
+            case "2":
+                changeHero();
+                break;
+            case "3":
+                seeMyTeam();
+                break;
+            default:
+                System.out.println("Opção invalida");
+                heroMenu();
+                break;
+        }
+    }
+    
+
+    private void seeTeam() {
+        
+    }
+
+    private void confirmHero() {
+    }
+
+    private void changeHero() {
+    }
+
+    private void seeMyTeam() {
+        try {
+            Game game = (Game) ois.readObject();
+            //imprimir minha equipa 
+            if (game.getTeamA().contains(this.user)) {
+                printMyTeam("A sua equipa é constituida por: ", game.getTeamA());
+            } else {
+                printMyTeam("A sua equipa é constituida por: ", game.getTeamB());
+            }
+            heroMenu();
+        } catch (IOException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, "Erro ao tentar ver a minha equipa", ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, "Erro ao tentar ver a minha equipa", ex);
+        }
+    }
 }

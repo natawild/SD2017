@@ -5,34 +5,99 @@
  */
 package mnjo.users;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
  *
  * @author Celia
  */
+public class User implements Serializable{
 
-public class User {
     private String username;
     private String password;
     private Integer rate;
+    private boolean waiting;
+    private Integer gameId; 
+    private Hero hero; 
+    private int numberOfGames; 
+    private int accumRate; 
 
     public User() {
         this.username = "";
         this.password = "";
-        this.rate=0;
+        this.rate = 0;
+        this.waiting = false;
+        this.gameId=null; 
+        this.hero= null;
+        this.numberOfGames=0; 
+        this.accumRate=0;
     }
 
     public User(User c) {
         this.username = c.getUsername();
         this.password = c.getPassword();
-        this.rate=c.getRate();
+        this.rate = c.getRate();
+        this.waiting = c.getWaiting();
+        this.gameId=c.getGameId();
+        this.hero=c.getHero();
+        this.numberOfGames=c.getNumberOfGames(); 
+        this.accumRate=c.getAccumRate();
     }
 
     public User(String username, String password) {
         this.username = username;
         this.password = password;
-        this.rate=0;
+        this.rate = 0;
+        this.waiting=false; 
+        this.gameId=null; 
+        this.hero=null;
+        this.numberOfGames=0;
+        this.accumRate=0;
+    }
+    
+    public User(String username, String password, boolean waiting) {
+        this.username = username;
+        this.password = password;
+        this.rate = 0;
+        this.waiting=waiting; 
+        this.gameId=null; 
+        this.hero=null; 
+        this.numberOfGames=0; 
+        this.accumRate=0;
+        
+    }
+
+    public int getAccumRate() {
+        return accumRate;
+    }
+
+    public void setAccumRate(int accumRate) {
+        this.accumRate = accumRate;
+    }
+
+    public int getNumberOfGames() {
+        return numberOfGames;
+    }
+
+    public void setNumberOfGames(int numberOfGames) {
+        this.numberOfGames = numberOfGames;
+    }
+
+    public Hero getHero() {
+        return hero;
+    }
+
+    public void setHero(Hero hero) {
+        this.hero = hero;
+    }
+
+    public Integer getGameId() {
+        return gameId;
+    }
+
+    public void setGameId(Integer gameId) {
+        this.gameId = gameId;
     }
 
     public String getUsername() {
@@ -41,6 +106,14 @@ public class User {
 
     public String getPassword() {
         return this.password;
+    }
+
+    public boolean getWaiting() {
+        return this.waiting;
+    }
+
+    public void setWaiting(boolean w) {
+        this.waiting = w;
     }
 
     public void setUsername(String username) {
@@ -58,8 +131,6 @@ public class User {
     public void setRate(Integer rate) {
         this.rate = rate;
     }
-    
-    
 
     @Override
     public String toString() {
@@ -69,6 +140,23 @@ public class User {
         string.append("password: ");
         string.append(password).append("\n");
         return string.toString();
+    }
+    
+    public String printUser(){
+        StringBuilder string = new StringBuilder();
+        string.append("Username: ");
+        string.append(username); 
+        if(hero!=null){
+            string.append(", Heroi: "); 
+            string.append(hero);  
+        }
+        return string.toString(); 
+    }
+    
+    //Atualiza rating do jogador 
+    public void upadteRate(int x){
+        accumRate=accumRate+x;
+        rate =(accumRate)/(numberOfGames++); 
     }
 
     @Override
@@ -89,13 +177,10 @@ public class User {
         int hash = 7;
         hash = 41 * hash + Objects.hashCode(this.username);
         hash = 41 * hash + Objects.hashCode(this.password);
-        hash = 41 * hash + Objects.hashCode(this.rate);
         return hash;
     }
 
-
-    public User clone(){
+    public User clone() {
         return new User(this);
     }
-        
 }
