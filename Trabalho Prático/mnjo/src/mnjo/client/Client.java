@@ -21,6 +21,7 @@ import mnjo.menus.Menu;
 import mnjo.users.Game;
 import mnjo.users.Hero;
 import mnjo.users.User;
+import mnjo.utils.Utils;
 
 /**
  *
@@ -173,10 +174,48 @@ public class Client extends Thread{
         System.out.println(in.readLine());
         
         this.executeLoginBoot();
-        
+        initGameBoot(); 
+        selectHeroBoot();
+        seeMyTimeBoot();
+        confirmeHeroAndStartGameBoot();
     }
     
-   
+    private void selectHeroBoot(){
+        try {
+            out.println("1");
+            //ler heroies
+            ois.readObject();
+            //Enviar escolha do heroi
+            out.println(Utils.generateRandom(0, 30));
+            String message = in.readLine();
+            while(message.equals("fail")){
+                out.println(Utils.generateRandom(0, 30));
+                message = in.readLine();
+            }
+        } catch (IOException | ClassNotFoundException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, "Erro ao ler herois", ex);
+        }
+    }
+    
+    private void seeMyTimeBoot(){
+        out.println("3");     
+        try {
+            Game game = (Game) ois.readObject();
+            if (game.getTeamA().contains(this.user)) {
+                printMyTeam("A sua equipa é constituida por: ", game.getTeamA());
+            } else {
+                printMyTeam("A sua equipa é constituida por: ", game.getTeamB());
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, "Erro ao tentar apresentar a equipa", ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, "Erro ao tentar apresentar a equipa", ex);
+        }
+    }
+    
+    private void confirmeHeroAndStartGameBoot(){
+        out.println("1");     
+    }
     
     public void initMenus(){
         Menu menu = new Menu(0);
@@ -201,7 +240,6 @@ public class Client extends Thread{
     public void executeLoginBoot(){
         out.println("1");
         loginBoot();
-        initGameBoot(); 
     }
     
     public void loginBoot(){
@@ -261,9 +299,6 @@ public class Client extends Thread{
             in.readLine();
             System.out.println("tem equipa #");
             Game game = (Game) ois.readObject(); 
-            printTeam(game);
-            //TODO: alterar metodo a baixo para nao imprimir menus para a consola
-            gameMenu();
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, "Erro ao tentar ler o socket", ex);
         } catch (ClassNotFoundException ex) {
@@ -347,10 +382,6 @@ public class Client extends Thread{
             else{
                 loggedMenus();       
             }
-            
-            //esperar que o servidor lhe envie uma mensagem a dizer que tem uma equipa formada
-            //mostra menu com opçoes para o cliente
-            //enviar a opçao escolhida pelo cliente ao servidor
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ClassNotFoundException ex) {
@@ -408,6 +439,7 @@ public class Client extends Thread{
             System.out.print(u.printUser());
             System.out.print(" | ");
         }
+        System.out.println("");
     }
     
     @Override
@@ -441,7 +473,10 @@ public class Client extends Thread{
                 heroMenu(); 
             }
             else{
-                
+                System.out.println("Heroi ja foi selecionado");
+                //TODO: 
+                // 1 apresentar a lista da equipa
+                // voltar a pedir para escolher outro heroi
             }
             
         } catch (IOException ex) {

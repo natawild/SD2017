@@ -281,12 +281,6 @@ public class GameManager {
         }
     }
     
-    //depois de conseguir formar uma equipa as threads que estão á espera de inserir jogadores 
-    //à variavel wantGame devem ser acordadas 
-    public void createTeam(){
-        
-    }
-    
     
     public List<Hero> initHeroes (){
         List listaHerois = new ArrayList();
@@ -302,9 +296,9 @@ public class GameManager {
         
         for(int i=0; i<team.size();i=i+2){
             team.get(i).setGameId(gameId);
-            teamA.add(team.get(i));
+            teamA.add(team.get(i).clone());
             team.get(i+1).setGameId(gameId);
-            teamB.add(team.get(i+1));
+            teamB.add(team.get(i+1).clone());
         }
         Game game = new Game(gameId, teamA, teamB, getHeroesClone()); 
         this.games.put(game.getId(), game); 

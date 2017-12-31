@@ -48,7 +48,7 @@ public class Hero implements Serializable{
     private boolean used; 
 
     public Hero() {
-        this.name = "";
+        this.name = null;
         this.used=false; 
     }
 

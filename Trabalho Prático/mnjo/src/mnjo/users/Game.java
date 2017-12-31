@@ -75,11 +75,39 @@ public class Game implements Serializable {
         synchronized(heroes.get(i)){
             if(heroes.get(i).isUsed()==false){
                 heroes.get(i).setUsed(true);
-                user.setHero(heroes.get(i));
+                
+                if(teamContainsUser(teamA, user)){
+                    teamA.get(getIndexTeamUser(teamA, user)).setHero(heroes.get(i));
+                }
+                else {
+                    teamB.get(getIndexTeamUser(teamB, user)).setHero(heroes.get(i));
+                }
                 sucess = true;
             }
         }
         return sucess;
+    }
+    
+    private boolean teamContainsUser(List<User> team, User user){
+        boolean exist = false;
+        for(User u: team){
+            if(u.getUsername().equals(user.getUsername())){
+                exist = true;
+                break;
+            }
+        }
+        return exist;
+    }
+    
+    private int getIndexTeamUser(List<User> team, User user){
+        int index = 0;
+        for(User u: team){
+            if(u.getUsername().equals(user.getUsername())){
+                return index;
+            }
+            index++;
+        }
+        return -1;
     }
     
 }

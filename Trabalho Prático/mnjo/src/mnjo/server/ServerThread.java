@@ -234,21 +234,23 @@ public class ServerThread extends Thread{
             default: gameMenu();
                 break;
         }
-        //consoante a opçcao do cliente executar o que pediu
     }
     
     private void chooseHero() {
         Game game = gameManager.getGames().get(user.getGameId()); 
         try { 
             oos.writeObject(game.getHeroes());
-            String inHero = in.readLine(); 
-            boolean success = game.selectHero(inHero, user); 
-            if(success){
-                out.println("success");
-                heroMenu();
-            }
-            else {
-                out.println("fail");   
+            boolean success = false;
+            while(!success){
+                String inHero = in.readLine(); 
+                success = game.selectHero(inHero, user); 
+                if(success){
+                    out.println("success");
+                    heroMenu();
+                }
+                else {
+                    out.println("fail");
+                }
             }
         } catch (IOException ex) {
             Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, "Erro ao tentar enviar a lista de herois", ex);
@@ -277,15 +279,18 @@ public class ServerThread extends Thread{
     }
 
     private void confirmHero() {
+        
     }
 
     private void changeHero() {
     }
 
     private void seeMyTeam() {
+
         Game game = gameManager.getGames().get(user.getGameId()); 
         try {
             oos.writeObject(game);
+            oos.flush();
             heroMenu(); 
         } catch (IOException ex) {
             Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, "Erro ao tentar enviar jogo", ex);
