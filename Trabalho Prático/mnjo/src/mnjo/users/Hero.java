@@ -45,35 +45,36 @@ public class Hero implements Serializable{
     public static final String HERO_NAME30 = "heroi30";
 
     private String name;
-    private boolean used; 
+    private Boolean used; 
 
     public Hero() {
         this.name = null;
-        this.used=false; 
+        this.used = null;
     }
-
-    public Hero(String name) {
-        this.name = name;
-        this.used=false; 
-    }
-
+    
     public Hero(String name, boolean used) {
         this.name = name;
         this.used = used;
     }
     
-
     public Hero(Hero h) {
         this.name = h.getName();
+        this.used = h.isUsed();
     }
 
     public boolean isUsed() {
+        return used;
+    }
+    
+    public boolean getUsed() {
         return used;
     }
 
     public void setUsed(boolean used) {
         this.used = used;
     }
+    
+    
 
     public String getName() {
         return this.name;
@@ -84,23 +85,40 @@ public class Hero implements Serializable{
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == this) {
-            return true;
-        }
-        if (obj == null || obj.getClass() != this.getClass()) {
-            return false;
-        }
-        Hero h = (Hero) obj;
-        return h.getName().equals(this.name);
-
+    public int hashCode() {
+        int hash = 7;
+        hash = 53 * hash + Objects.hashCode(this.name);
+        hash = 53 * hash + (this.used ? 1 : 0);
+        return hash;
     }
 
     @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 97 * hash + Objects.hashCode(this.name);
-        return hash;
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Hero other = (Hero) obj;
+        if (this.used != other.used) {
+            return false;
+        }
+        return this.name.equals(other.name);
+    }
+
+    @Override
+    public String toString() {
+        return "Hero{" + "name=" + name + ", used=" + used + '}';
+    }
+    
+    public String printHero(){
+        StringBuilder string = new StringBuilder();
+        string.append(name); 
+        return string.toString(); 
     }
 
     @Override

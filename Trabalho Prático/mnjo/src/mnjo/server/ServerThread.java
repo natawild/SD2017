@@ -12,6 +12,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import mnjo.client.Client;
@@ -19,6 +21,7 @@ import mnjo.exceptions.DuplicatedUserException;
 import mnjo.exceptions.InvalidCredentialsException;
 import mnjo.users.Game;
 import mnjo.users.GameManager;
+import mnjo.users.Hero;
 import mnjo.users.User;
 
 /**
@@ -33,7 +36,8 @@ public class ServerThread extends Thread{
     private PrintWriter out;
     private GameManager gameManager;
     private ObjectOutputStream oos ; 
-    private ObjectInputStream ois; 
+    private ObjectInputStream ois;
+    private ReentrantLock chooseHeroLock;
     
 
     public ServerThread(GameManager gameManager, Socket socket, int clientNumber) {
@@ -41,6 +45,7 @@ public class ServerThread extends Thread{
         this.socket = socket;
         this.clientNumber= clientNumber;
         this.user = null;
+        this.chooseHeroLock = new ReentrantLock();
     }
 
     public Socket getSocket() {
@@ -90,9 +95,7 @@ public class ServerThread extends Thread{
     public void setGameManager(GameManager gameManager) {
         this.gameManager = gameManager;
     }
-    
-    
-    
+     
     @Override
     public void run() {
         try {
@@ -167,7 +170,7 @@ public class ServerThread extends Thread{
                 }
                 
                 if(user != null){
-                  out.println("sucess");
+                  out.println("success");
                 }
                 else {
                    out.println("fail"); 
@@ -199,7 +202,7 @@ public class ServerThread extends Thread{
             }
             
             if(registedUser != null){
-                out.println("sucess");
+                out.println("success");
             }
             else {
                 out.println("fail"); 
@@ -236,26 +239,29 @@ public class ServerThread extends Thread{
         }
     }
     
-    private void chooseHero() {
-        Game game = gameManager.getGames().get(user.getGameId()); 
+    private void chooseHero() throws IOException {
+        List<Hero> heroes = gameManager.getHeroes(); 
         try { 
-            oos.writeObject(game.getHeroes());
+            oos.writeObject(heroes);
             boolean success = false;
-            while(!success){
+            while(success == false){
                 String inHero = in.readLine(); 
+                Game game = gameManager.getGame(user.getGameId());
                 success = game.selectHero(inHero, user); 
-                if(success){
+                if(success==true){
                     out.println("success");
-                    heroMenu();
                 }
                 else {
                     out.println("fail");
                 }
+                    
+                
             }
         } catch (IOException ex) {
             Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, "Erro ao tentar enviar a lista de herois", ex);
         }
         
+        heroMenu();
     }
     
     private void heroMenu() throws IOException {
@@ -286,15 +292,40 @@ public class ServerThread extends Thread{
     }
 
     private void seeMyTeam() {
+        Game game = gameManager.getGame(user.getGameId()); 
+         String myTeam;
+        if (game.getTeamA().contains(user)) {
+            myTeam = createStringMyTeam(game.getTeamA());
+        } else {
+            myTeam = createStringMyTeam(game.getTeamB());
+        }
 
-        Game game = gameManager.getGames().get(user.getGameId()); 
         try {
-            oos.writeObject(game);
-            oos.flush();
+            out.println(myTeam);
             heroMenu(); 
         } catch (IOException ex) {
             Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, "Erro ao tentar enviar jogo", ex);
         }
+    }
+
+    private String createStringMyTeam(List<User> team) {
+        StringBuilder sb = new StringBuilder();
+        int index =0;
+        for(User u: team){
+            sb.append(u.getUsername());
+            sb.append(":");
+            if(u.getHero()!=null){
+                sb.append(u.getHero().getName());
+                
+            }else {
+                sb.append("null");
+            }
+            if(index<team.size()-1){
+                    sb.append(";");
+                }
+            index++;
+        }
+        return sb.toString();
     }
     
 }

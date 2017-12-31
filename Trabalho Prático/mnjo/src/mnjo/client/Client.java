@@ -11,7 +11,9 @@ import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
+import java.lang.reflect.Array;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Scanner;
@@ -186,10 +188,10 @@ public class Client extends Thread{
             //ler heroies
             ois.readObject();
             //Enviar escolha do heroi
-            out.println(Utils.generateRandom(0, 30));
+            out.println(Utils.generateRandom(0, 29));
             String message = in.readLine();
             while(message.equals("fail")){
-                out.println(Utils.generateRandom(0, 30));
+                out.println(Utils.generateRandom(0, 29));
                 message = in.readLine();
             }
         } catch (IOException | ClassNotFoundException ex) {
@@ -200,21 +202,22 @@ public class Client extends Thread{
     private void seeMyTimeBoot(){
         out.println("3");     
         try {
-            Game game = (Game) ois.readObject();
-            if (game.getTeamA().contains(this.user)) {
-                printMyTeam("A sua equipa é constituida por: ", game.getTeamA());
-            } else {
-                printMyTeam("A sua equipa é constituida por: ", game.getTeamB());
-            }
+           String myTeam = in.readLine();
+            List<User> myTeamList = createMyTeam(myTeam);
+            printMyTeam("A sua equipa é constituida por: ", myTeamList);
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, "Erro ao tentar apresentar a equipa", ex);
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, "Erro ao tentar apresentar a equipa", ex);
-        }
+        } 
     }
     
     private void confirmeHeroAndStartGameBoot(){
-        out.println("1");     
+        try {
+            //TODO: apagar linha seguinte
+            in.readLine();     
+            out.println("1");
+        } catch (IOException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     public void initMenus(){
@@ -272,7 +275,7 @@ public class Client extends Thread{
                 out.println(password);
                 
                 loginMessage = in.readLine();
-                if(loginMessage.equals("sucess")){
+                if(loginMessage.equals("success")){
                     logged= true;
                     user= new User(username, password);
                 }
@@ -523,18 +526,33 @@ public class Client extends Thread{
 
     private void seeMyTeam() {
         try {
-            Game game = (Game) ois.readObject();
-            //imprimir minha equipa 
-            if (game.getTeamA().contains(this.user)) {
-                printMyTeam("A sua equipa é constituida por: ", game.getTeamA());
-            } else {
-                printMyTeam("A sua equipa é constituida por: ", game.getTeamB());
-            }
+            String myTeam = in.readLine();
+            List<User> myTeamList = createMyTeam(myTeam);
+            printMyTeam("A sua equipa é constituida por: ", myTeamList);
             heroMenu();
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, "Erro ao tentar ver a minha equipa", ex);
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, "Erro ao tentar ver a minha equipa", ex);
         }
+    }
+
+    private List<User> createMyTeam(String myTeam) {
+        //imprimir minha equipa
+        List<User> myTeamList = new ArrayList<>();
+        String[] users = myTeam.split(";");
+        for(String userString: users){
+            String[] userSplitted = userString.split(":");
+            User u = new User();
+            u.setUsername(userSplitted[0]);
+            if(userSplitted[1].equals("null")){
+                u.setHero(null);
+            }
+            else {
+                Hero h = new Hero();
+                h.setName(userSplitted[1]);
+                u.setHero(h);  
+            }
+            myTeamList.add(u);
+        }
+        return myTeamList;
     }
 }

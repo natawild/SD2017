@@ -7,6 +7,8 @@ package mnjo.users;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  *
@@ -18,6 +20,7 @@ public class Game implements Serializable {
     private List<User> teamA;
     private List<User> teamB; 
     private List<Hero> heroes; 
+    private ReentrantLock heroesLock;
 
     public Game(int id, List<User> teamA, List<User> teamB, List<Hero> heroes) {
         this.id = id;
@@ -25,8 +28,27 @@ public class Game implements Serializable {
         this.teamA = teamA;
         this.teamB = teamB;
         this.heroes = heroes; 
+        this.heroesLock = new ReentrantLock();
     }
-
+    
+    public Game(int id, Integer winner, List<User> teamA, List<User> teamB, List<Hero> heroes) {
+        this.id = id;
+        this.winner = winner;
+        this.teamA = teamA;
+        this.teamB = teamB;
+        this.heroes = heroes; 
+        this.heroesLock = new ReentrantLock();
+    }
+    
+    public Game(Game game) {
+        this.id = game.getId();
+        this.winner = game.getWinner();
+        this.teamA = game.getTeamA();
+        this.teamB = game.getTeamB();
+        this.heroes = game.getHeroes(); 
+        this.heroesLock = new ReentrantLock();
+    }
+    
     public List<Hero> getHeroes() {
         return heroes;
     }
@@ -67,24 +89,77 @@ public class Game implements Serializable {
     public void setTeamB(List<User> teamB) {
         this.teamB = teamB;
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 67 * hash + this.id;
+        hash = 67 * hash + Objects.hashCode(this.winner);
+        hash = 67 * hash + Objects.hashCode(this.teamA);
+        hash = 67 * hash + Objects.hashCode(this.teamB);
+        hash = 67 * hash + Objects.hashCode(this.heroes);
+        return hash;
+    }
+
+    public ReentrantLock getHeroesLock() {
+        return heroesLock;
+    }
+
+    public void setHeroesLock(ReentrantLock heroesLock) {
+        this.heroesLock = heroesLock;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Game other = (Game) obj;
+        if (this.id != other.id) {
+            return false;
+        }
+        if (!Objects.equals(this.winner, other.winner)) {
+            return false;
+        }
+        if (!Objects.equals(this.teamA, other.teamA)) {
+            return false;
+        }
+        if (!Objects.equals(this.teamB, other.teamB)) {
+            return false;
+        }
+        if (!Objects.equals(this.heroes, other.heroes)) {
+            return false;
+        }
+        return true;
+    }
+    
+    
     
     //seleciona o heroi e consoante o sucesso diz 
     public boolean selectHero(String index, User user){
         int i = Integer.valueOf(index);
         boolean sucess = false;
         synchronized(heroes.get(i)){
-            if(heroes.get(i).isUsed()==false){
+            if (heroes.get(i).isUsed() == false) {
                 heroes.get(i).setUsed(true);
-                
-                if(teamContainsUser(teamA, user)){
-                    teamA.get(getIndexTeamUser(teamA, user)).setHero(heroes.get(i));
-                }
-                else {
-                    teamB.get(getIndexTeamUser(teamB, user)).setHero(heroes.get(i));
+                synchronized(teamA){
+                       synchronized(teamB){
+                            if (teamContainsUser(teamA, user)) {
+                                teamA.get(getIndexTeamUser(teamA, user)).setHero(heroes.get(i));
+                            } else {
+                                teamB.get(getIndexTeamUser(teamB, user)).setHero(heroes.get(i));
+                            } 
+                       }
                 }
                 sucess = true;
             }
-        }
+        } 
         return sucess;
     }
     

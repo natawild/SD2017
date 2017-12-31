@@ -5,14 +5,9 @@
  */
 package mnjo.client.tests;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import mnjo.client.Client;
-import mnjo.server.MainServer;
-import mnjo.server.ServerThread;
 
 /**
  *

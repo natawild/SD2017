@@ -5,6 +5,7 @@
  */
 package mnjo.users;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,7 +24,7 @@ import mnjo.server.MainServer;
  */
 
 //esta classe servirá para armazenar e gerir todos os dados 
-public class GameManager {
+public class GameManager implements Serializable{
     
     /*Map com todos os utilizadores registados*/
     private Map<String, User> users;
@@ -36,6 +37,7 @@ public class GameManager {
     private Condition wantGameCondition; 
     private int gameNumber;
     private Map<Integer, Game> games; 
+    private ReentrantLock gamesLock;
 
     public GameManager() {
         this.users = new HashMap<>();
@@ -46,6 +48,7 @@ public class GameManager {
         this.gameNumber=1;
         this.games= new HashMap<>();
         this.heroes=new ArrayList<>(); 
+        this.gamesLock = new ReentrantLock();
     }
 
     public Map<Integer, Game> getGames() {
@@ -56,7 +59,7 @@ public class GameManager {
         this.games = games;
     }
 
-    public int getGameNumber() {
+    synchronized public int getGameNumber() {
         return gameNumber;
     }
 
@@ -104,6 +107,17 @@ public class GameManager {
     
     public void addHero (Hero hero){
         this.heroes.add(hero); 
+    }
+    
+    public Game getGame(int id){
+        Game game;
+        this.gamesLock.lock();
+        try{
+           game = this.games.get(id);
+        }finally{
+            this.gamesLock.unlock();
+        }
+        return game;
     }
     
     private int incrementorGameNumber(){

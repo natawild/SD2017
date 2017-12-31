@@ -17,15 +17,16 @@ public class User implements Serializable{
     private String username;
     private String password;
     private Integer rate;
-    private boolean waiting;
+    private Boolean waiting;
     private Integer gameId; 
     private Hero hero; 
     private int numberOfGames; 
     private int accumRate; 
 
+    
     public User() {
-        this.username = "";
-        this.password = "";
+        this.username = null;
+        this.password = null;
         this.rate = 0;
         this.waiting = false;
         this.gameId=null; 
@@ -56,16 +57,16 @@ public class User implements Serializable{
         this.accumRate=0;
     }
     
-    public User(String username, String password, boolean waiting) {
+    
+    public User(String username, String password, Integer rate, boolean waiting, Integer gameId, Hero hero, int numberOfGames, int accumRate) {
         this.username = username;
         this.password = password;
-        this.rate = 0;
-        this.waiting=waiting; 
-        this.gameId=null; 
-        this.hero=null; 
-        this.numberOfGames=0; 
-        this.accumRate=0;
-        
+        this.rate = rate;
+        this.waiting = waiting;
+        this.gameId = gameId;
+        this.hero = hero;
+        this.numberOfGames = numberOfGames;
+        this.accumRate = accumRate;
     }
 
     public int getAccumRate() {
@@ -132,6 +133,7 @@ public class User implements Serializable{
         this.rate = rate;
     }
 
+    
     @Override
     public String toString() {
         StringBuilder string = new StringBuilder();
@@ -148,7 +150,10 @@ public class User implements Serializable{
         string.append(username); 
         if(hero!=null){
             string.append(", Heroi: "); 
-            string.append(hero);  
+            string.append(hero.printHero());  
+        }
+        else {
+            string.append(", Heroi: Ainda nao esta selecionado"); 
         }
         return string.toString(); 
     }
