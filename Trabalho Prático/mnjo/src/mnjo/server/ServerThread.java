@@ -37,7 +37,6 @@ public class ServerThread extends Thread{
     private GameManager gameManager;
     private ObjectOutputStream oos ; 
     private ObjectInputStream ois;
-    private ReentrantLock chooseHeroLock;
     
 
     public ServerThread(GameManager gameManager, Socket socket, int clientNumber) {
@@ -45,7 +44,6 @@ public class ServerThread extends Thread{
         this.socket = socket;
         this.clientNumber= clientNumber;
         this.user = null;
-        this.chooseHeroLock = new ReentrantLock();
     }
 
     public Socket getSocket() {
@@ -246,6 +244,7 @@ public class ServerThread extends Thread{
             boolean success = false;
             while(success == false){
                 String inHero = in.readLine(); 
+                //todo tratar timeout
                 Game game = gameManager.getGame(user.getGameId());
                 success = game.selectHero(inHero, user); 
                 if(success==true){
@@ -268,7 +267,7 @@ public class ServerThread extends Thread{
         //esperar pelo opcao do cliente
         String option = in.readLine();
         switch(option){
-           case "1": confirmHero();
+           case "1": confirmHeroAndPlayGame();
                     break;  
            case "2": changeHero();
                     break;
@@ -284,8 +283,32 @@ public class ServerThread extends Thread{
         
     }
 
-    private void confirmHero() {
+    private void confirmHeroAndPlayGame() throws IOException {
+        gameManager.startGame(user);
+        sendTeams();
         
+        gameManager.upateRate(user);
+        if(gameManager.myTeamWin(user)){
+            out.println("win");
+        }
+        else {
+            out.println("lose");
+        }
+        gameMenu();
+    }
+
+    private void sendTeams() {
+        Game game = gameManager.getGames().get(user.getGameId());
+        String myTeam, otherTeam;
+        if (game.getTeamA().contains(user)) {
+            myTeam = createStringMyTeam(game.getTeamA());
+            otherTeam = createStringMyTeam(game.getTeamB());
+        } else {
+            myTeam = createStringMyTeam(game.getTeamB());
+            otherTeam = createStringMyTeam(game.getTeamA());
+        }
+        out.print(myTeam);
+        out.print(otherTeam);
     }
 
     private void changeHero() {
@@ -293,7 +316,7 @@ public class ServerThread extends Thread{
 
     private void seeMyTeam() {
         Game game = gameManager.getGame(user.getGameId()); 
-         String myTeam;
+        String myTeam;
         if (game.getTeamA().contains(user)) {
             myTeam = createStringMyTeam(game.getTeamA());
         } else {

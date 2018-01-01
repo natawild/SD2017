@@ -185,4 +185,11 @@ public class Game implements Serializable {
         return -1;
     }
     
+    public boolean isTeamAMyTeam(User user){
+        if(this.teamA.contains(user)){
+            return true;
+        }
+        return false;
+    }
+    
 }

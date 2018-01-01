@@ -22,6 +22,7 @@ public class User implements Serializable{
     private Hero hero; 
     private int numberOfGames; 
     private int accumRate; 
+    private boolean heroConfirmed;
 
     
     public User() {
@@ -33,6 +34,7 @@ public class User implements Serializable{
         this.hero= null;
         this.numberOfGames=0; 
         this.accumRate=0;
+        this.heroConfirmed = false;
     }
 
     public User(User c) {
@@ -44,6 +46,7 @@ public class User implements Serializable{
         this.hero=c.getHero();
         this.numberOfGames=c.getNumberOfGames(); 
         this.accumRate=c.getAccumRate();
+        this.heroConfirmed = c.isHeroConfirmed();
     }
 
     public User(String username, String password) {
@@ -55,10 +58,11 @@ public class User implements Serializable{
         this.hero=null;
         this.numberOfGames=0;
         this.accumRate=0;
+        this.heroConfirmed = false;
     }
     
     
-    public User(String username, String password, Integer rate, boolean waiting, Integer gameId, Hero hero, int numberOfGames, int accumRate) {
+    public User(String username, String password, Integer rate, boolean waiting, Integer gameId, Hero hero, int numberOfGames, int accumRate, int heroConfirmed) {
         this.username = username;
         this.password = password;
         this.rate = rate;
@@ -67,6 +71,15 @@ public class User implements Serializable{
         this.hero = hero;
         this.numberOfGames = numberOfGames;
         this.accumRate = accumRate;
+        this.heroConfirmed = this.heroConfirmed;
+    }
+
+    public boolean isHeroConfirmed() {
+        return heroConfirmed;
+    }
+
+    public void setHeroConfirmed(boolean heroConfirmed) {
+        this.heroConfirmed = heroConfirmed;
     }
 
     public int getAccumRate() {
@@ -161,7 +174,8 @@ public class User implements Serializable{
     //Atualiza rating do jogador 
     public void upadteRate(int x){
         accumRate=accumRate+x;
-        rate =(accumRate)/(numberOfGames++); 
+        numberOfGames++;
+        rate =(accumRate)/(numberOfGames); 
     }
 
     @Override

@@ -11,7 +11,6 @@ import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
-import java.lang.reflect.Array;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
@@ -212,7 +211,7 @@ public class Client extends Thread{
     
     private void confirmeHeroAndStartGameBoot(){
         try {
-            //TODO: apagar linha seguinte
+            out.println("1");
             in.readLine();     
             out.println("1");
         } catch (IOException ex) {
@@ -481,7 +480,6 @@ public class Client extends Thread{
                 // 1 apresentar a lista da equipa
                 // voltar a pedir para escolher outro heroi
             }
-            
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, "Erro ao tentar ler a lista de herois", ex);
         } catch (ClassNotFoundException ex) {
@@ -498,7 +496,7 @@ public class Client extends Thread{
 
         switch (option) {
             case "1":
-                confirmHero();
+                confirmHeroAndPlayGame();
                 break;
             case "2":
                 changeHero();
@@ -518,7 +516,28 @@ public class Client extends Thread{
         
     }
 
-    private void confirmHero() {
+    private void confirmHeroAndPlayGame() {
+        try {
+            String myTeam = in.readLine();
+            List<User> myTeamList = createMyTeam(myTeam);
+            printMyTeam("A sua equipa é constituida por: ", myTeamList);
+            
+            String otherTeam = in.readLine();
+            List<User> otherTeamList = createMyTeam(myTeam);
+            printMyTeam("A equipa adversaria é constituida por: ", otherTeamList);
+            
+            String message = in.readLine();
+            if(message.equals("win")){
+                System.out.println("Parabens a sua equipa venceu");
+                gameMenu();
+            }
+            else {
+                System.out.println("Jogo perdido");
+                gameMenu();
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, "Erro ao confirmar heroi", ex);
+        }
     }
 
     private void changeHero() {

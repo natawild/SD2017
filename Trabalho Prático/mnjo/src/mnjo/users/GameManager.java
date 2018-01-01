@@ -17,6 +17,7 @@ import java.util.logging.Logger;
 import mnjo.exceptions.DuplicatedUserException;
 import mnjo.exceptions.InvalidCredentialsException;
 import mnjo.server.MainServer;
+import mnjo.utils.Utils;
 
 /**
  *
@@ -33,23 +34,29 @@ public class GameManager implements Serializable{
     private List<Hero> heroes; 
     private ReentrantLock usersLock;
     private Map<Integer,List<User>> wantGame; 
-    private ReentrantLock wantGameLock; 
-    private Condition wantGameCondition; 
+    private ReentrantLock wanTeamLock; 
+    private Condition wantTeamCondition; 
     private int gameNumber;
     private Map<Integer, Game> games; 
     private ReentrantLock gamesLock;
+    private ReentrantLock wanGameLock;
+    private Condition wantGameCondition;
 
     public GameManager() {
         this.users = new HashMap<>();
         this.wantGame=new HashMap<>();
         this.usersLock = new ReentrantLock();
-        this.wantGameLock = new ReentrantLock();
-        this.wantGameCondition = wantGameLock.newCondition(); 
+        this.wanTeamLock = new ReentrantLock();
+        this.wantTeamCondition = wanTeamLock.newCondition(); 
         this.gameNumber=1;
         this.games= new HashMap<>();
         this.heroes=new ArrayList<>(); 
         this.gamesLock = new ReentrantLock();
+        this.wanGameLock = new ReentrantLock();
+        this.wantGameCondition = wanGameLock.newCondition();
     }
+    
+    
 
     public Map<Integer, Game> getGames() {
         return games;
@@ -216,7 +223,7 @@ public class GameManager implements Serializable{
     }
     
     public void findTeam(User user){
-        this.wantGameLock.lock();
+        this.wanTeamLock.lock();
         boolean haveTeam=false;  
         List<User> team = new ArrayList<>(); 
         team.add(user);
@@ -232,19 +239,19 @@ public class GameManager implements Serializable{
                 this.addPlayer(user);
                 user.setWaiting(true);
                 while(user.getWaiting()==true){
-                    this.wantGameCondition.await();
+                    this.wantTeamCondition.await();
                 }
             }
             else{
                 saveTeam(team);
-                this.wantGameCondition.signalAll();
+                this.wantTeamCondition.signalAll();
             }
         }
         catch (InterruptedException ex) {        
             Logger.getLogger(GameManager.class.getName()).log(Level.SEVERE, "Erro ao tentar adormecer Thread", ex);
         }        
         finally{
-            this.wantGameLock.unlock();    
+            this.wanTeamLock.unlock();    
         }
     }
 
@@ -303,6 +310,8 @@ public class GameManager implements Serializable{
     }
 
     private void saveTeam(List<User> team) {
+        this.gamesLock.lock();
+        try{
         List<User> teamA = new ArrayList<>();  
         List<User> teamB = new ArrayList<>();  
         
@@ -316,8 +325,96 @@ public class GameManager implements Serializable{
         }
         Game game = new Game(gameId, teamA, teamB, getHeroesClone()); 
         this.games.put(game.getId(), game); 
+        } finally{
+            this.gamesLock.unlock();
+        }
         
     }
+
+    public void startGame(User user) {
+        this.wanGameLock.lock();
+        try{
+            Game game = this.getGame(user.getGameId());   
+            while(allUsersHaveHeroConfirmed(game, user) == false){
+                if(game.isTeamAMyTeam(user)){
+                    game.getTeamA().get(game.getTeamA().indexOf(user)).setHeroConfirmed(true);
+                }
+                else {
+                    game.getTeamB().get(game.getTeamB().indexOf(user)).setHeroConfirmed(true);
+                }
+                //user.setHeroConfirmed(true);
+                this.wantGameCondition.await();
+            }
+            
+            if(user.isHeroConfirmed() == false){
+                if(game.isTeamAMyTeam(user)){
+                    game.getTeamA().get(game.getTeamA().indexOf(user)).setHeroConfirmed(true);
+                }
+                else {
+                    game.getTeamB().get(game.getTeamB().indexOf(user)).setHeroConfirmed(true);
+                }
+                int winner = Utils.generateRandom(0, 1);
+                game.setWinner(winner);
+                this.wantGameCondition.signalAll();
+            }
+        }
+        catch (InterruptedException ex) {
+            Logger.getLogger(GameManager.class.getName()).log(Level.SEVERE, "Erro ao adormecer thread", ex);
+        }        
+        finally {
+            this.wanGameLock.unlock();
+        }
+    }
+    
+    private boolean allUsersHaveHeroConfirmed(Game game, User user){
+        boolean allUsersHaveHeroConfirmed = true;
+        for(User u: game.getTeamA()){
+            if(u.equals(user) == false && u.isHeroConfirmed()==false){
+                allUsersHaveHeroConfirmed = false;
+                break;
+            }
+        }
+        if(allUsersHaveHeroConfirmed){
+            for(User u: game.getTeamB()){
+                if(u.equals(user) == false && u.isHeroConfirmed()==false){
+                    allUsersHaveHeroConfirmed = false;
+                    break;
+                }
+            }
+        }
+        return allUsersHaveHeroConfirmed;
+    }
+
+    public void upateRate(User user) {
+        Game game = this.getGame(user.getGameId()); 
+        if(getMyTeam(game, user) == game.getWinner()){
+            user.upadteRate(9);
+        }
+        else {
+            user.upadteRate(0);
+        }
+    }
+    
+    public boolean myTeamWin(User u){
+        Game game = this.getGame(u.getGameId()); 
+        if(getMyTeam(game, u) == game.getWinner()){
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    
+    
+    private int getMyTeam(Game game , User user){
+        if(game.getTeamA().contains(user)){
+            return 0;
+        }
+        else {
+            return 1;
+        }
+    }
+    
     
      
 }
