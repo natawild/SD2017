@@ -267,7 +267,7 @@ public class ServerThread extends Thread{
         //esperar pelo opcao do cliente
         String option = in.readLine();
         switch(option){
-           case "1": confirmHeroAndPlayGame();
+           case "1": confirmeHeroAndPlayGame();
                     break;  
            case "2": changeHero();
                     break;
@@ -283,32 +283,32 @@ public class ServerThread extends Thread{
         
     }
 
-    private void confirmHeroAndPlayGame() throws IOException {
+    private void confirmeHeroAndPlayGame() throws IOException {
         gameManager.startGame(user);
         sendTeams();
-        
         gameManager.upateRate(user);
+        in.readLine();
         if(gameManager.myTeamWin(user)){
             out.println("win");
         }
         else {
             out.println("lose");
         }
-        gameMenu();
+        this.user.setHero(null);
+        this.user.setWaiting(false);
+        this.user.setGameId(null);
+        this.user.setHeroConfirmed(false);        
     }
 
     private void sendTeams() {
         Game game = gameManager.getGames().get(user.getGameId());
-        String myTeam, otherTeam;
+        String team;
         if (game.getTeamA().contains(user)) {
-            myTeam = createStringMyTeam(game.getTeamA());
-            otherTeam = createStringMyTeam(game.getTeamB());
+            team = createStringTeam(game.getTeamA(),game.getTeamB());
         } else {
-            myTeam = createStringMyTeam(game.getTeamB());
-            otherTeam = createStringMyTeam(game.getTeamA());
+            team = createStringTeam(game.getTeamB(),game.getTeamA());
         }
-        out.print(myTeam);
-        out.print(otherTeam);
+        out.println(team);
     }
 
     private void changeHero() {
@@ -348,6 +348,14 @@ public class ServerThread extends Thread{
                 }
             index++;
         }
+        return sb.toString();
+    }
+
+    private String createStringTeam(List<User> teamA, List<User> teamB) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(createStringMyTeam(teamA));
+        sb.append("|");
+        sb.append(createStringMyTeam(teamB));
         return sb.toString();
     }
     

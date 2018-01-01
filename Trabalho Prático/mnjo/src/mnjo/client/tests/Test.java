@@ -20,7 +20,8 @@ public class Test {
         list.add("celia");
         list.add("marcia");
         list.add("adriana");
-        
+        list.add("maria");
+        list.add("joao");
         
         for(String a : list){
             Client c = new Client("localhost", 12345,a,a );

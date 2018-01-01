@@ -213,7 +213,14 @@ public class Client extends Thread{
         try {
             out.println("1");
             in.readLine();     
-            out.println("1");
+            //Envia mensagem dummy
+            out.println("game result");
+            //le resultado
+            in.readLine();
+            //fazer logout
+            out.println("0");
+            //fechar conecçao
+            out.println("0");   
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -496,7 +503,7 @@ public class Client extends Thread{
 
         switch (option) {
             case "1":
-                confirmHeroAndPlayGame();
+                confirmeHeroAndPlayGame();
                 break;
             case "2":
                 changeHero();
@@ -516,24 +523,24 @@ public class Client extends Thread{
         
     }
 
-    private void confirmHeroAndPlayGame() {
+    private void confirmeHeroAndPlayGame() {
         try {
-            String myTeam = in.readLine();
-            List<User> myTeamList = createMyTeam(myTeam);
+            String teams = in.readLine();
+            List<User> myTeamList = new ArrayList<>();
+            List<User> otherTeamList = new ArrayList<>();
+            createTeam(teams, myTeamList, otherTeamList);
             printMyTeam("A sua equipa é constituida por: ", myTeamList);
-            
-            String otherTeam = in.readLine();
-            List<User> otherTeamList = createMyTeam(myTeam);
             printMyTeam("A equipa adversaria é constituida por: ", otherTeamList);
             
+            out.println("game result");
             String message = in.readLine();
             if(message.equals("win")){
                 System.out.println("Parabens a sua equipa venceu");
-                gameMenu();
+                loggedMenus();
             }
             else {
                 System.out.println("Jogo perdido");
-                gameMenu();
+                loggedMenus();
             }
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, "Erro ao confirmar heroi", ex);
@@ -573,5 +580,26 @@ public class Client extends Thread{
             myTeamList.add(u);
         }
         return myTeamList;
+    }
+    
+    private void createTeam(String team, List<User> teamA, List<User> teamB) {
+        String[] teams = team.split("\\|");
+        for(int i=0; i<2; i++){
+            String[] users = teams[i].split(";");
+            for(String userString: users){
+                String[] userSplitted = userString.split(":");
+                User u = new User();
+                u.setUsername(userSplitted[0]);
+                Hero h = new Hero();
+                h.setName(userSplitted[1]);
+                u.setHero(h);  
+                if(i==0){
+                    teamA.add(u);
+                }
+                else {
+                     teamB.add(u);
+                }
+            }
+        }
     }
 }

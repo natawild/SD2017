@@ -244,6 +244,7 @@ public class GameManager implements Serializable{
             }
             else{
                 saveTeam(team);
+                removeTeamFromWaitingList(team);
                 this.wantTeamCondition.signalAll();
             }
         }
@@ -283,7 +284,9 @@ public class GameManager implements Serializable{
         if(usersWithSameRateSize>0){
             for(int i =0; i<usersWithSameRateSize && team.size()<MainServer.TEAM_SIZE; i++){
                 User u = usersWithSameRate.get(i);
-                team.add(u);
+                if(u.getWaiting() == true){
+                    team.add(u);
+                }
             }
         }
     }
@@ -297,7 +300,9 @@ public class GameManager implements Serializable{
         if(team.size()<MainServer.TEAM_SIZE && usersWithVariationRateSize>0){
             for(int i =0; i< MainServer.TEAM_SIZE - team.size() && i < usersWithVariationRateSize; i++){
                 User u = usersWithVariationRate.get(i);
-                team.add(u);
+                if(u.getWaiting() == true){
+                    team.add(u);
+                }
             }
         }
     }
@@ -336,23 +341,13 @@ public class GameManager implements Serializable{
         try{
             Game game = this.getGame(user.getGameId());   
             while(allUsersHaveHeroConfirmed(game, user) == false){
-                if(game.isTeamAMyTeam(user)){
-                    game.getTeamA().get(game.getTeamA().indexOf(user)).setHeroConfirmed(true);
-                }
-                else {
-                    game.getTeamB().get(game.getTeamB().indexOf(user)).setHeroConfirmed(true);
-                }
+                updateHeroConfirmedStatus(game, user);
                 //user.setHeroConfirmed(true);
                 this.wantGameCondition.await();
             }
             
             if(user.isHeroConfirmed() == false){
-                if(game.isTeamAMyTeam(user)){
-                    game.getTeamA().get(game.getTeamA().indexOf(user)).setHeroConfirmed(true);
-                }
-                else {
-                    game.getTeamB().get(game.getTeamB().indexOf(user)).setHeroConfirmed(true);
-                }
+                updateHeroConfirmedStatus(game, user);
                 int winner = Utils.generateRandom(0, 1);
                 game.setWinner(winner);
                 this.wantGameCondition.signalAll();
@@ -363,6 +358,15 @@ public class GameManager implements Serializable{
         }        
         finally {
             this.wanGameLock.unlock();
+        }
+    }
+
+    private void updateHeroConfirmedStatus(Game game, User user) {
+        if(game.isTeamAMyTeam(user)){
+            game.getTeamA().get(game.getTeamA().indexOf(user)).setHeroConfirmed(true);
+        }
+        else {
+            game.getTeamB().get(game.getTeamB().indexOf(user)).setHeroConfirmed(true);
         }
     }
     
@@ -414,7 +418,11 @@ public class GameManager implements Serializable{
             return 1;
         }
     }
-    
-    
-     
+
+    private void removeTeamFromWaitingList(List<User> team) {
+        for(User u: team){
+           this.wantGame.remove(team); 
+        }   
+    }
+  
 }
