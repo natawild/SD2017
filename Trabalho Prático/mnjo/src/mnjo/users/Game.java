@@ -8,7 +8,11 @@ package mnjo.users;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import mnjo.utils.Utils;
 
 /**
  *
@@ -21,7 +25,9 @@ public class Game implements Serializable {
     private List<User> teamB; 
     private List<Hero> heroesA; 
     private List<Hero> heroesB; 
-    private ReentrantLock heroesLock;
+    private Boolean timeout;
+    private ReentrantLock wantGameLock;
+    private Condition wantGameCondition;
 
     public Game(int id, List<User> teamA, List<User> teamB, List<Hero> heroesA, List<Hero> heroesB) {
         this.id = id;
@@ -30,7 +36,9 @@ public class Game implements Serializable {
         this.teamB = teamB;
         this.heroesA = heroesA; 
         this.heroesB = heroesB; 
-        this.heroesLock = new ReentrantLock();
+        this.timeout=null; 
+        this.wantGameLock = new ReentrantLock();
+        this.wantGameCondition = wantGameLock.newCondition();
     }
     
     public Game(int id, Integer winner, List<User> teamA, List<User> teamB, List<Hero> heroesA, List<Hero> heroesB) {
@@ -40,7 +48,9 @@ public class Game implements Serializable {
         this.teamB = teamB;
         this.heroesA = heroesA; 
         this.heroesB = heroesB; 
-        this.heroesLock = new ReentrantLock();
+        this.timeout=null;
+        this.wantGameLock = new ReentrantLock();
+        this.wantGameCondition = wantGameLock.newCondition();
     }
     
     public Game(Game game) {
@@ -50,9 +60,20 @@ public class Game implements Serializable {
         this.teamB = game.getTeamB();
         this.heroesA = game.getHeroesA(); 
         this.heroesB = game.getHeroesB(); 
-        this.heroesLock = new ReentrantLock();
+        this.timeout=game.getTimeout();
+        this.wantGameLock = game.getWantGameLock();
+        this.wantGameCondition = game.getWantGameCondition();
     }
 
+    public Boolean getTimeout() {
+        return timeout;
+    }
+
+    public void setTimeout(Boolean timeout) {
+        this.timeout = timeout;
+    }
+
+    
     public List<Hero> getHeroesA() {
         return heroesA;
     }
@@ -114,13 +135,23 @@ public class Game implements Serializable {
         return hash;
     }
 
-    public ReentrantLock getHeroesLock() {
-        return heroesLock;
+    public ReentrantLock getWantGameLock() {
+        return wantGameLock;
     }
 
-    public void setHeroesLock(ReentrantLock heroesLock) {
-        this.heroesLock = heroesLock;
+    public void setWantGameLock(ReentrantLock wantGameLock) {
+        this.wantGameLock = wantGameLock;
     }
+
+    public Condition getWantGameCondition() {
+        return wantGameCondition;
+    }
+
+    public void setWantGameCondition(Condition wantGameCondition) {
+        this.wantGameCondition = wantGameCondition;
+    }
+
+    
 
     @Override
     public boolean equals(Object obj) {
@@ -261,4 +292,98 @@ public class Game implements Serializable {
         return sucess;
     }
     
+    public void startGame(User user) {
+        this.wantGameLock.lock();
+        try{
+            while(this.timeout == null && allUsersHaveHeroConfirmed(user) == false){
+                updateHeroConfirmedStatus(user);
+                this.wantGameCondition.await();
+            }
+            
+            if(this.timeout == null && user.isHeroConfirmed() == false){
+                valideGame();
+                updateHeroConfirmedStatus(user);
+                this.winner = Utils.generateRandom(0, 1);;
+                this.wantGameCondition.signalAll();
+            }
+
+        }
+        catch (InterruptedException ex) {
+            Logger.getLogger(GameManager.class.getName()).log(Level.SEVERE, "Erro ao adormecer thread", ex);
+        }        
+        finally {
+            this.wantGameLock.unlock();
+        }
+    }
+    
+    private boolean allUsersHaveHeroConfirmed( User user){
+        boolean allUsersHaveHeroConfirmed = true;
+        for(User u: this.teamA){
+            if(u.equals(user) == false && u.isHeroConfirmed()==false){
+                allUsersHaveHeroConfirmed = false;
+                break;
+            }
+        }
+        if(allUsersHaveHeroConfirmed){
+            for(User u: teamB){
+                if(u.equals(user) == false && u.isHeroConfirmed()==false){
+                    allUsersHaveHeroConfirmed = false;
+                    break;
+                }
+            }
+        }
+        return allUsersHaveHeroConfirmed;
+    }
+    
+    private void updateHeroConfirmedStatus(User user) {
+        if(isTeamAMyTeam(user)){
+            teamA.get(teamA.indexOf(user)).setHeroConfirmed(true);
+        }
+        else {
+            teamB.get(teamB.indexOf(user)).setHeroConfirmed(true);
+        }
+    }
+    
+    public void abortGame(){
+        this.wantGameLock.lock();
+        try{
+            if(timeout == null){
+                //atualiza estado
+                timeout = true;
+                //acorda todas as thread que estão a espera de iniciae jogo
+                this.wantGameCondition.signalAll();
+            }
+        }finally{
+            this.wantGameLock.unlock();
+        }
+    }
+    
+    public void valideGame(){
+        this.wantGameLock.lock();
+        try{
+            if(timeout == null){
+                //atualiza estado
+                timeout = false;
+                //acorda todas as thread que estão a espera de iniciae jogo
+            }
+        }finally{
+            this.wantGameLock.unlock();
+        }
+    }
+    
+    public boolean isAborted(){
+        boolean aborted;
+        this.wantGameLock.lock();
+        try{
+            if(timeout == true){
+               aborted = true; 
+            }
+            else {
+                aborted = false;
+            }
+        }finally{
+            this.wantGameLock.unlock();
+        }
+        return aborted;
+    }
 }

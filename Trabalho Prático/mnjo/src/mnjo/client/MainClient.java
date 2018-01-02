@@ -15,7 +15,6 @@ import java.util.logging.Logger;
  */
 
 public class MainClient {
-    public static final int TIMEOUT= 30;
     
     public static void main(String[] args) {
         Client c = new Client("localhost", 12345);

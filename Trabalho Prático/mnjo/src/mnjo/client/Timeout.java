@@ -7,6 +7,7 @@ package mnjo.client;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import mnjo.users.Game;
 
 /**
  *
@@ -15,23 +16,23 @@ import java.util.logging.Logger;
 public class Timeout extends Thread {
 
     private int seconds;
-    private Client client;
+    private Game game;
 
-    public Timeout(int seconds, Client client) {
+    public Timeout(int seconds, Game game) {
         this.seconds = seconds;
-        this.client= client;
+        this.game= game;
     }
 
-    public Client getClient() {
-        return client;
+    public Game getGame() {
+        return game;
     }
 
-    public void setClient(Client client) {
-        this.client = client;
+    public void setGame(Game game) {
+        this.game = game;
     }
+
     
     
-
     public int getSeconds() {
         return seconds;
     }
@@ -44,8 +45,7 @@ public class Timeout extends Thread {
     public void run() {
         try {
             Timeout.sleep(seconds * 1000);
-            client.interrupt();
-           // thrown new InterruptedException()
+            game.abortGame();
         } catch (InterruptedException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, "Erro ao adormecer a thread ", ex);
         }

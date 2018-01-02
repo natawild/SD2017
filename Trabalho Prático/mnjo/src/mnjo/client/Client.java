@@ -214,7 +214,13 @@ public class Client extends Thread{
     private void confirmeHeroAndStartGameBoot(){
         try {
             out.println("1");
-            in.readLine();     
+            String message = in.readLine(); 
+            if(message.equals("aborted")){
+                System.out.println("O jogo foi abortado porque algum dos jogadores excedeu o tempo maximo"); 
+            }
+            else {
+                System.out.println("O jogo efetuado com sucesso"); 
+            }
             //Envia mensagem dummy
             out.println("game result");
             //le resultado
@@ -529,23 +535,26 @@ public class Client extends Thread{
 
     private void confirmeHeroAndPlayGame() {
         try {
-            String teams = in.readLine();
-            List<User> myTeamList = new ArrayList<>();
-            List<User> otherTeamList = new ArrayList<>();
-            createTeam(teams, myTeamList, otherTeamList);
-            printMyTeam("A sua equipa é constituida por: ", myTeamList);
-            printMyTeam("A equipa adversaria é constituida por: ", otherTeamList);
-            
-            out.println("game result");
             String message = in.readLine();
-            if(message.equals("win")){
-                System.out.println("Parabens a sua equipa venceu");
-                loggedMenus();
+            if(message.equals("aborted")){
+                System.out.println("O jogo foi abortado porque algum dos jogadores excedeu o tempo maximo"); 
             }
             else {
-                System.out.println("Jogo perdido");
-                loggedMenus();
+                List<User> myTeamList = new ArrayList<>();
+                List<User> otherTeamList = new ArrayList<>();
+                createTeam(message, myTeamList, otherTeamList);
+                printMyTeam("A sua equipa é constituida por: ", myTeamList);
+                printMyTeam("A equipa adversaria é constituida por: ", otherTeamList);
+
+                out.println("game result");
+                message = in.readLine();
+                if (message.equals("win")) {
+                    System.out.println("Parabens a sua equipa venceu");               
+                } else {
+                    System.out.println("Jogo perdido");
+                }
             }
+            loggedMenus();
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, "Erro ao confirmar heroi", ex);
         }

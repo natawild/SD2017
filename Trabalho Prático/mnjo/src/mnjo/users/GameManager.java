@@ -14,6 +14,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import mnjo.client.Timeout;
 import mnjo.exceptions.DuplicatedUserException;
 import mnjo.exceptions.InvalidCredentialsException;
 import mnjo.server.MainServer;
@@ -39,8 +40,7 @@ public class GameManager implements Serializable{
     private int gameNumber;
     private Map<Integer, Game> games; 
     private ReentrantLock gamesLock;
-    private ReentrantLock wanGameLock;
-    private Condition wantGameCondition;
+
 
     public GameManager() {
         this.users = new HashMap<>();
@@ -52,8 +52,6 @@ public class GameManager implements Serializable{
         this.games= new HashMap<>();
         this.heroes=new ArrayList<>(); 
         this.gamesLock = new ReentrantLock();
-        this.wanGameLock = new ReentrantLock();
-        this.wantGameCondition = wanGameLock.newCondition();
     }
     
     
@@ -213,39 +211,43 @@ public class GameManager implements Serializable{
     
     //depois de adicionar o utilizador a esta lista devem ser acordadas as threads que 
     //estão á espera para formar equipa
-    private void addPlayer(User user){
+    private void addWantGamePlayer(User user){
+        this.wanTeamLock.lock();
+        try{
         List<User> usersWithSameRate = this.wantGame.get(user.getRate()); 
         if(usersWithSameRate==null){
             usersWithSameRate= new ArrayList<>();
             this.wantGame.put(user.getRate(), usersWithSameRate);
         }
-        usersWithSameRate.add(user);         
+        usersWithSameRate.add(user); 
+        }finally{
+            this.wanTeamLock.unlock();
+        }        
     }
     
     public void findTeam(User user){
-        this.wanTeamLock.lock();
-        boolean haveTeam=false;  
         List<User> team = new ArrayList<>(); 
         team.add(user);
+        this.wanTeamLock.lock();
         try{
             searchForTeam(user, team); 
             searchForTeamWithVariation(user, team, -1);
             searchForTeamWithVariation(user, team, +1);
    
             if (isTeamFull(team)) {
-                haveTeam = updateWaitingTeamStatus(team);   
+                updateWaitingTeamStatus(team);  
+                Game game = saveTeam(team);
+                removeTeamFromWaitingList(team);
+                Timeout timer = new Timeout(MainServer.TIMEOUT, game);
+                this.wantTeamCondition.signalAll();
+                timer.start();
             }
-            if(notHaveTeam(haveTeam)){
-                this.addPlayer(user);
+            else {
+                this.addWantGamePlayer(user);
                 user.setWaiting(true);
                 while(user.getWaiting()==true){
                     this.wantTeamCondition.await();
                 }
-            }
-            else{
-                saveTeam(team);
-                removeTeamFromWaitingList(team);
-                this.wantTeamCondition.signalAll();
             }
         }
         catch (InterruptedException ex) {        
@@ -264,15 +266,10 @@ public class GameManager implements Serializable{
         return haveTeam==false;
     }
 
-    private boolean updateWaitingTeamStatus(List<User> team) {
-        boolean haveTeam;
-        haveTeam = true;
+    private void updateWaitingTeamStatus(List<User> team) {
         for(User u : team){
             u.setWaiting(false);
-            List<User> list = wantGame.get(u.getRate());
-            list.remove(u);
         }
-        return haveTeam;
     }
 
     private void searchForTeam(User user, List<User> team) {
@@ -314,81 +311,34 @@ public class GameManager implements Serializable{
         return listaHerois; 
     }
 
-    private void saveTeam(List<User> team) {
+    private Game saveTeam(List<User> team) {
+        Game game =null;
         this.gamesLock.lock();
         try{
-        List<User> teamA = new ArrayList<>();  
-        List<User> teamB = new ArrayList<>();  
-        
-        int gameId=incrementorGameNumber();
-        
-        for(int i=0; i<team.size();i=i+2){
-            team.get(i).setGameId(gameId);
-            teamA.add(team.get(i).clone());
-            team.get(i+1).setGameId(gameId);
-            teamB.add(team.get(i+1).clone());
-        }
-        Game game = new Game(gameId, teamA, teamB, getHeroesClone(), getHeroesClone()); 
-        this.games.put(game.getId(), game); 
+            
+            List<User> teamA = new ArrayList<>();  
+            List<User> teamB = new ArrayList<>();  
+
+            int gameId=incrementorGameNumber();
+
+            for(int i=0; i<team.size();i=i+2){
+                team.get(i).setGameId(gameId);
+                teamA.add(team.get(i).clone());
+                team.get(i+1).setGameId(gameId);
+                teamB.add(team.get(i+1).clone());
+            }
+            
+            game = new Game(gameId, teamA, teamB, getHeroesClone(), getHeroesClone()); 
+            this.games.put(game.getId(), game); 
         } finally{
             this.gamesLock.unlock();
         }
         
+        return game;
+        
     }
 
-    public void startGame(User user) {
-        this.wanGameLock.lock();
-        try{
-            Game game = this.getGame(user.getGameId());   
-            while(allUsersHaveHeroConfirmed(game, user) == false){
-                updateHeroConfirmedStatus(game, user);
-                //user.setHeroConfirmed(true);
-                this.wantGameCondition.await();
-            }
-            
-            if(user.isHeroConfirmed() == false){
-                updateHeroConfirmedStatus(game, user);
-                int winner = Utils.generateRandom(0, 1);
-                game.setWinner(winner);
-                this.wantGameCondition.signalAll();
-            }
-        }
-        catch (InterruptedException ex) {
-            Logger.getLogger(GameManager.class.getName()).log(Level.SEVERE, "Erro ao adormecer thread", ex);
-        }        
-        finally {
-            this.wanGameLock.unlock();
-        }
-    }
-
-    private void updateHeroConfirmedStatus(Game game, User user) {
-        if(game.isTeamAMyTeam(user)){
-            game.getTeamA().get(game.getTeamA().indexOf(user)).setHeroConfirmed(true);
-        }
-        else {
-            game.getTeamB().get(game.getTeamB().indexOf(user)).setHeroConfirmed(true);
-        }
-    }
-    
-    private boolean allUsersHaveHeroConfirmed(Game game, User user){
-        boolean allUsersHaveHeroConfirmed = true;
-        for(User u: game.getTeamA()){
-            if(u.equals(user) == false && u.isHeroConfirmed()==false){
-                allUsersHaveHeroConfirmed = false;
-                break;
-            }
-        }
-        if(allUsersHaveHeroConfirmed){
-            for(User u: game.getTeamB()){
-                if(u.equals(user) == false && u.isHeroConfirmed()==false){
-                    allUsersHaveHeroConfirmed = false;
-                    break;
-                }
-            }
-        }
-        return allUsersHaveHeroConfirmed;
-    }
-
+   
     public void upateRate(User user) {
         Game game = this.getGame(user.getGameId()); 
         if(getMyTeam(game, user) == game.getWinner()){
@@ -421,8 +371,11 @@ public class GameManager implements Serializable{
 
     private void removeTeamFromWaitingList(List<User> team) {
         for(User u: team){
-           this.wantGame.remove(team); 
+           //this.wantGame.remove(team);
+           List<User> list = wantGame.get(u.getRate());
+           list.remove(u);
         }   
+       
     }
   
 }

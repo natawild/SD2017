@@ -19,7 +19,8 @@ import mnjo.users.User;
  */
 public class MainServer {
     public static final int TEAM_SIZE = 4;
-
+    public static final int TIMEOUT= 30;
+    
     /**
      * @param args the command line arguments
      */

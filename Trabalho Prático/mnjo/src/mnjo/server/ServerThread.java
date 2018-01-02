@@ -284,16 +284,24 @@ public class ServerThread extends Thread{
     }
 
     private void confirmeHeroAndPlayGame() throws IOException {
-        gameManager.startGame(user);
-        sendTeams();
-        gameManager.upateRate(user);
-        in.readLine();
-        if(gameManager.myTeamWin(user)){
-            out.println("win");
+        Game game = gameManager.getGame(user.getGameId());
+        game.startGame(user);
+        boolean isAborted = game.isAborted();
+        if(isAborted){
+            out.println("aborted");
         }
         else {
-            out.println("lose");
+            sendTeams();
+            gameManager.upateRate(user);
+            in.readLine();
+            if(gameManager.myTeamWin(user)){
+                out.println("win");
+            }
+            else {
+                out.println("lose");
+            }
         }
+        
         this.user.setHero(null);
         this.user.setWaiting(false);
         this.user.setGameId(null);
