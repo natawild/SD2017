@@ -328,7 +328,7 @@ public class GameManager implements Serializable{
             team.get(i+1).setGameId(gameId);
             teamB.add(team.get(i+1).clone());
         }
-        Game game = new Game(gameId, teamA, teamB, getHeroesClone()); 
+        Game game = new Game(gameId, teamA, teamB, getHeroesClone(), getHeroesClone()); 
         this.games.put(game.getId(), game); 
         } finally{
             this.gamesLock.unlock();

@@ -252,9 +252,8 @@ public class ServerThread extends Thread{
                 }
                 else {
                     out.println("fail");
-                }
-                    
-                
+                    seeMyTeam(false);
+                }         
             }
         } catch (IOException ex) {
             Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, "Erro ao tentar enviar a lista de herois", ex);
@@ -279,8 +278,9 @@ public class ServerThread extends Thread{
         //consoante a opçcao do cliente executar o que pediu
     }
     
-     private void seeTeam() {
-        
+     private void seeTeam() throws IOException {
+        seeMyTeam(false);
+        gameMenu();
     }
 
     private void confirmeHeroAndPlayGame() throws IOException {
@@ -311,10 +311,40 @@ public class ServerThread extends Thread{
         out.println(team);
     }
 
-    private void changeHero() {
+    private void changeHero() throws IOException {
+        seeMyTeam(false);
+        alternateHero();
+        heroMenu();   
+    }
+    
+    private void alternateHero() throws IOException {
+        List<Hero> heroes = gameManager.getHeroes(); 
+        try { 
+            oos.writeObject(heroes);
+            boolean success = false;
+            while(success == false){
+                String inHero = in.readLine(); 
+                //todo tratar timeout
+                Game game = gameManager.getGame(user.getGameId());
+                success = game.alternateHero(inHero, user); 
+                if(success==true){
+                    out.println("success");
+                }
+                else {
+                    out.println("fail");
+                    seeMyTeam(false);
+                }         
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, "Erro ao tentar enviar a lista de herois", ex);
+        }
     }
 
     private void seeMyTeam() {
+        seeMyTeam(true);
+    }
+    
+    private void seeMyTeam(boolean goToHeroMenu) {
         Game game = gameManager.getGame(user.getGameId()); 
         String myTeam;
         if (game.getTeamA().contains(user)) {
@@ -325,7 +355,9 @@ public class ServerThread extends Thread{
 
         try {
             out.println(myTeam);
-            heroMenu(); 
+            if(goToHeroMenu == true){
+                heroMenu(); 
+            }
         } catch (IOException ex) {
             Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, "Erro ao tentar enviar jogo", ex);
         }

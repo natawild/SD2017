@@ -22,6 +22,8 @@ public class Test {
         list.add("adriana");
         list.add("maria");
         list.add("joao");
+        //list.add("carla");
+        //list.add("gil");
         
         for(String a : list){
             Client c = new Client("localhost", 12345,a,a );

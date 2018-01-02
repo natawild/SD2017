@@ -470,22 +470,23 @@ public class Client extends Thread{
                 System.out.println(i+ " - "+h.getName());
                 i++;
             }
-            int option = Integer.valueOf(scanner.next());
-            
-            while(option<0 && option>=heroes.size()){
-                System.out.println("Opção inválida. Insira novamente a opção");
-                option = Integer.valueOf(scanner.next());
-            }
-            out.println(option);
-            String messageSuccess = in.readLine();
-            if(messageSuccess.equals("success")){
-                heroMenu(); 
-            }
-            else{
-                System.out.println("Heroi ja foi selecionado");
-                //TODO: 
-                // 1 apresentar a lista da equipa
-                // voltar a pedir para escolher outro heroi
+            String message = "fail";
+            while(message.equals("fail")){
+                int option = Integer.valueOf(scanner.next());
+
+                while(option<0 && option>=heroes.size()){
+                    System.out.println("Opção inválida. Insira novamente a opção");
+                    option = Integer.valueOf(scanner.next());
+                }
+                out.println(option);
+                message = in.readLine();
+                if(message.equals("success")){
+                    heroMenu(); 
+                }
+                else{
+                    System.out.println("Heroi ja foi selecionado");
+                    seeMyTeam(false);
+                }
             }
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, "Erro ao tentar ler a lista de herois", ex);
@@ -494,7 +495,7 @@ public class Client extends Thread{
         }
     }
     
-       public void heroMenu() {
+       public void heroMenu() throws IOException {
         Menu menu = new Menu(3);
         menu.showMenu();
         //selecionar opção do menu
@@ -520,7 +521,8 @@ public class Client extends Thread{
     
 
     private void seeTeam() {
-        
+        seeMyTeam(false);
+        gameMenu();
     }
 
     private void confirmeHeroAndPlayGame() {
@@ -547,15 +549,60 @@ public class Client extends Thread{
         }
     }
 
-    private void changeHero() {
+    private void changeHero() throws IOException {
+        seeMyTeam(false);
+        alternateHero();
+        heroMenu();
+        
+    }
+    
+    private void alternateHero() throws IOException {
+        try {
+            List<Hero> heroes = (List<Hero>) ois.readObject();
+            int i=0;
+            System.out.println("Escolha um dos seguintes herois:");
+            for(Hero h: heroes){
+                System.out.println(i+ " - "+h.getName());
+                i++;
+            }
+            String message = "fail";
+            while(message.equals("fail")){
+                int option = Integer.valueOf(scanner.next());
+
+                while(option<0 && option>=heroes.size()){
+                    System.out.println("Opção inválida. Insira novamente a opção");
+                    option = Integer.valueOf(scanner.next());
+                }
+                out.println(option);
+                message = in.readLine();
+                if(message.equals("success")){
+                    System.out.println("Heroi alterado com sucesso"); 
+                }
+                else{
+                    System.out.println("Heroi ja está selecionado");
+                    seeMyTeam(false);
+                    System.out.println("Selecione outro heroi");
+                }
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, "Erro ao tentar ler a lista de herois", ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, "Erro ao tentar ler a lista de heois", ex);
+        }
     }
 
     private void seeMyTeam() {
+        seeMyTeam(true);
+    }
+    
+    private void seeMyTeam(boolean goToHeroMenu) {
         try {
             String myTeam = in.readLine();
             List<User> myTeamList = createMyTeam(myTeam);
             printMyTeam("A sua equipa é constituida por: ", myTeamList);
-            heroMenu();
+            if(goToHeroMenu==true){
+                heroMenu();
+            }
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, "Erro ao tentar ver a minha equipa", ex);
         }

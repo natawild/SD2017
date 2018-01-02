@@ -58,6 +58,8 @@ public class MainServer {
         User user4 = new User ("marcia", "marcia");
         User user5 = new User ("maria", "maria", 9, 1, 9);
         User user6 = new User ("joao", "joao", 9, 1, 9);
+        User user7 = new User ("gil", "gil");
+        User user8 = new User ("carla", "carla");
         Hero h1 = new Hero(Hero.HERO_NAME1, false);
         Hero h2 = new Hero(Hero.HERO_NAME2, false);
         Hero h3 = new Hero(Hero.HERO_NAME3, false);
@@ -97,6 +99,8 @@ public class MainServer {
             gameManager.registerUser(user4);
             gameManager.registerUser(user5);
             gameManager.registerUser(user6);
+            gameManager.registerUser(user7);
+            gameManager.registerUser(user8);
         } catch (DuplicatedUserException ex) {
             Logger.getLogger(MainServer.class.getName()).log(Level.SEVERE, "Erro ao adicionar cliente", ex);
         }

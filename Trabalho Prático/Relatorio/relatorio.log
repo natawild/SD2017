@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2017.3.9)  27 NOV 2017 12:49
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2017.3.9)  2 JAN 2018 11:30
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1471,28 +1471,28 @@ Underfull \hbox (badness 10000) in paragraph at lines 36--38
 \T1/ptm/m/n/10.95 Cé-lia Fi-guei-redo
  []
 
-<carlos.jpg, id=7, 949.5475pt x 1215.54124pt>
-File: carlos.jpg Graphic file (type jpg)
- <use carlos.jpg>
-Package pdftex.def Info: carlos.jpg used on input line 41.
-(pdftex.def)             Requested size: 145.28029pt x 185.9772pt.
+<adriana.jpg, id=7, 947.54pt x 948.54375pt>
+File: adriana.jpg Graphic file (type jpg)
+ <use adriana.jpg>
+Package pdftex.def Info: adriana.jpg used on input line 41.
+(pdftex.def)             Requested size: 161.07967pt x 161.2503pt.
 
-Overfull \hbox (54.23286pt too wide) in paragraph at lines 41--43
+Overfull \hbox (70.03224pt too wide) in paragraph at lines 41--43
 [][]
  []
 
 
 Underfull \hbox (badness 10000) in paragraph at lines 41--43
-\T1/ptm/m/n/10.95 José Car-los Fa-ria
+\T1/ptm/m/n/10.95 Adri-ana Pe-reira
  []
 
-<marcia.jpg, id=8, 678.535pt x 945.5325pt>
-File: marcia.jpg Graphic file (type jpg)
- <use marcia.jpg>
-Package pdftex.def Info: marcia.jpg used on input line 46.
-(pdftex.def)             Requested size: 135.77707pt x 189.20415pt.
+<marcia.jpeg, id=8, 673.51625pt x 854.19125pt>
+File: marcia.jpeg Graphic file (type jpg)
+ <use marcia.jpeg>
+Package pdftex.def Info: marcia.jpeg used on input line 46.
+(pdftex.def)             Requested size: 127.9694pt x 162.29802pt.
 
-Overfull \hbox (44.72964pt too wide) in paragraph at lines 46--48
+Overfull \hbox (36.92198pt too wide) in paragraph at lines 46--48
 [][]
  []
 
@@ -1504,7 +1504,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 46--48
 [1
 
 {/usr/local/texlive/2016/texmf-var/fonts/map/pdftex/updmap/pdftex.map} <./logo.
-png> <./celia.jpg> <./carlos.jpg> <./marcia.jpg>]) (./relatorio.toc)
+png> <./celia.jpg> <./adriana.jpg> <./marcia.jpeg>]) (./relatorio.toc)
 \tf@toc=\write6
 \openout6 = `relatorio.toc'.
 
@@ -1537,8 +1537,8 @@ Cap\'{\i }tulo 6.
 
 ] (./relatorio.aux) ) 
 Here is how much of TeX's memory you used:
- 33542 strings out of 493014
- 785242 string characters out of 6133352
+ 33544 strings out of 493014
+ 785260 string characters out of 6133352
  909530 words of memory out of 5000000
  36541 multiletter control sequences out of 15000+600000
  42148 words of font info for 50 fonts, out of 8000000 for 9000
@@ -1548,7 +1548,7 @@ Here is how much of TeX's memory you used:
 r.enc}</usr/local/texlive/2016/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></us
 r/local/texlive/2016/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb></usr/local/t
 exlive/2016/texmf-dist/fonts/type1/urw/times/utmr8a.pfb>
-Output written on relatorio.pdf (9 pages, 420724 bytes).
+Output written on relatorio.pdf (9 pages, 884597 bytes).
 PDF statistics:
  56 PDF objects out of 1000 (max. 8388607)
  36 compressed objects within 1 object stream

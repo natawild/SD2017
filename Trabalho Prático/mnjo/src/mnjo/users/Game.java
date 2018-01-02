@@ -19,24 +19,27 @@ public class Game implements Serializable {
     private Integer winner; 
     private List<User> teamA;
     private List<User> teamB; 
-    private List<Hero> heroes; 
+    private List<Hero> heroesA; 
+    private List<Hero> heroesB; 
     private ReentrantLock heroesLock;
 
-    public Game(int id, List<User> teamA, List<User> teamB, List<Hero> heroes) {
+    public Game(int id, List<User> teamA, List<User> teamB, List<Hero> heroesA, List<Hero> heroesB) {
         this.id = id;
         this.winner = null;
         this.teamA = teamA;
         this.teamB = teamB;
-        this.heroes = heroes; 
+        this.heroesA = heroesA; 
+        this.heroesB = heroesB; 
         this.heroesLock = new ReentrantLock();
     }
     
-    public Game(int id, Integer winner, List<User> teamA, List<User> teamB, List<Hero> heroes) {
+    public Game(int id, Integer winner, List<User> teamA, List<User> teamB, List<Hero> heroesA, List<Hero> heroesB) {
         this.id = id;
         this.winner = winner;
         this.teamA = teamA;
         this.teamB = teamB;
-        this.heroes = heroes; 
+        this.heroesA = heroesA; 
+        this.heroesB = heroesB; 
         this.heroesLock = new ReentrantLock();
     }
     
@@ -45,16 +48,25 @@ public class Game implements Serializable {
         this.winner = game.getWinner();
         this.teamA = game.getTeamA();
         this.teamB = game.getTeamB();
-        this.heroes = game.getHeroes(); 
+        this.heroesA = game.getHeroesA(); 
+        this.heroesB = game.getHeroesB(); 
         this.heroesLock = new ReentrantLock();
     }
-    
-    public List<Hero> getHeroes() {
-        return heroes;
+
+    public List<Hero> getHeroesA() {
+        return heroesA;
     }
 
-    public void setHeroes(List<Hero> heroes) {
-        this.heroes = heroes;
+    public void setHeroesA(List<Hero> heroesA) {
+        this.heroesA = heroesA;
+    }
+
+    public List<Hero> getHeroesB() {
+        return heroesB;
+    }
+
+    public void setHeroesB(List<Hero> heroesB) {
+        this.heroesB = heroesB;
     }
 
     public int getId() {
@@ -97,7 +109,8 @@ public class Game implements Serializable {
         hash = 67 * hash + Objects.hashCode(this.winner);
         hash = 67 * hash + Objects.hashCode(this.teamA);
         hash = 67 * hash + Objects.hashCode(this.teamB);
-        hash = 67 * hash + Objects.hashCode(this.heroes);
+        hash = 67 * hash + Objects.hashCode(this.heroesA);
+        hash = 67 * hash + Objects.hashCode(this.heroesB);
         return hash;
     }
 
@@ -133,7 +146,10 @@ public class Game implements Serializable {
         if (!Objects.equals(this.teamB, other.teamB)) {
             return false;
         }
-        if (!Objects.equals(this.heroes, other.heroes)) {
+        if (!Objects.equals(this.heroesA, other.heroesA)) {
+            return false;
+        }
+        if (!Objects.equals(this.heroesB, other.heroesB)) {
             return false;
         }
         return true;
@@ -142,26 +158,47 @@ public class Game implements Serializable {
     
     
     //seleciona o heroi e consoante o sucesso diz 
-    public boolean selectHero(String index, User user){
-        int i = Integer.valueOf(index);
-        boolean sucess = false;
-        synchronized(heroes.get(i)){
-            if (heroes.get(i).isUsed() == false) {
-                heroes.get(i).setUsed(true);
-                synchronized(teamA){
-                       synchronized(teamB){
-                            if (teamContainsUser(teamA, user)) {
-                                teamA.get(getIndexTeamUser(teamA, user)).setHero(heroes.get(i));
-                            } else {
-                                teamB.get(getIndexTeamUser(teamB, user)).setHero(heroes.get(i));
-                            } 
-                       }
-                }
-                sucess = true;
-            }
-        } 
-        return sucess;
+    public boolean selectHero(String indexHero, User user){
+        int index = Integer.valueOf(indexHero);
+        boolean success = false;
+        
+        if(teamContainsUser(this.teamA, user)){
+           success = selectHero(this.teamA, heroesA, user, index);
+        }
+        else {
+            success = selectHero(this.teamB, heroesB, user, index);
+        }
+        
+        return success;
     }
+    
+    public boolean alternateHero(String indexHero, User user){
+        int actualHero = getHeroIndex(user);
+        int futureHero = Integer.valueOf(indexHero);
+        boolean success = false;
+        
+        if(teamContainsUser(this.teamA, user)){
+           success = alternateHero(this.teamA, heroesA, user, actualHero, futureHero);
+        }
+        else {
+            success = alternateHero(this.teamB, heroesB, user, actualHero, futureHero);
+        }
+        
+        return success;
+    }
+
+    private int getHeroIndex(User user) {
+        int actualHero;
+        Hero h = user.getHero();
+        if(teamContainsUser(this.teamA, user)){
+            actualHero = heroesA.indexOf(h);
+        }
+        else {
+            actualHero = heroesB.indexOf(h);
+        }
+        return actualHero;
+    }
+    
     
     private boolean teamContainsUser(List<User> team, User user){
         boolean exist = false;
@@ -190,6 +227,38 @@ public class Game implements Serializable {
             return true;
         }
         return false;
+    }
+
+    private boolean selectHero(List<User> team, List<Hero> heroes, User user, int indexHero) {
+        boolean success = false;
+        synchronized(heroes.get(indexHero)){
+            if (heroes.get(indexHero).isUsed() == false) {
+                heroes.get(indexHero).setUsed(true);
+                user.setHero(heroes.get(indexHero));
+                team.get(getIndexTeamUser(team, user)).setHero(heroes.get(indexHero));
+                success = true;
+            }
+        } 
+        return success;
+    }
+
+    private boolean alternateHero(List<User> team, List<Hero> heroes, User user, int actualHero, int futureHero) {
+        boolean sucess = false;
+        if(futureHero == actualHero){
+           return true; 
+        }
+        synchronized(heroes.get(actualHero)){
+            synchronized(heroes.get(futureHero)){
+                if (heroes.get(futureHero).isUsed() == false ) {
+                    heroes.get(futureHero).setUsed(true);
+                    user.setHero(heroes.get(futureHero));
+                    team.get(getIndexTeamUser(team, user)).setHero(heroes.get(futureHero));
+                    heroes.get(actualHero).setUsed(false);
+                    sucess = true;
+                }
+            }
+        } 
+        return sucess;
     }
     
 }

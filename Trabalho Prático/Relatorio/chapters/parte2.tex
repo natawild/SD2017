@@ -1,7 +1,10 @@
 \chapter{Comunicação Servidor-Cliente}
-Neste capítulo falaremos 
+Para cumprir com os requisitos do enunciado, implementamos um servidor e
+um cliente que comunicam via sockets (TCP). 
 
-
+ Uma das threads do Servidor,tem como objectivo receber mensagens por parte do Cliente, e a outra thread tem como objectivo enviar mensagens para o Cliente. Do lado do Cliente verifi-se a mesma estrutura, onde uma das threads do Cliente envia mensagens e outra recebe mensagens por parte do Servidor. As mensagens neste problema em questão, são orientadas à linha, isto é a comunicação é feita através de linhas de texto (Strings), onde cada linha de texto equivale a uma mensagem. A imagem que se segue clarifica melhor a estruturação. 
+ 
+ 
 
 \chapter{Controlo de Concorrência}
 
