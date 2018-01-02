@@ -190,6 +190,8 @@ public class Client extends Thread{
             out.println(Utils.generateRandom(0, 29));
             String message = in.readLine();
             while(message.equals("fail")){
+                //le a minha equipa enviado pelo servidor
+                in.readLine();
                 out.println(Utils.generateRandom(0, 29));
                 message = in.readLine();
             }
