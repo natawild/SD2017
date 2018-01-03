@@ -1,2 +1,33 @@
 \chapter{Descrição geral do projeto}
 \section{Implementação}
+Foram criadas classes que permitem o funcionamento do programa 
+\subsection{Client}
+A classe \textit{Client}  é responsável por guardar toda a informação do cliente, permite a conecção deste ao servidor e permite executar todas as funcionalidades pretendidas.  
+
+\subsubsection{MainClient}
+A classe \textit{MainClient}  executa o cliente.
+
+\subsection{Server}
+A classe \textit{Server} é responsável pelo servidor e é esta que está à escuta de novas conecções dos clientes. Quando uma coneção é aceite toda a sua lógica é delegada na classe ServerThread. 
+
+\subsubsection{ServerThread}
+A classe \textit{ServerThread} é responsável por tratar os pedidos de cada cliente, existindo portanto uma thread por cliente. Sempre que necessário delega ações na classe GameManager. 
+
+\subsubsection{MainServer}
+Esta classe representa o executável que permite manter o servidor ligado enquanto os
+utilizadores desfrutam da aplicação.
+
+\subsection{Timeout}
+A classe \textit{Timeout} é responsável por garantir que a fase de escolha de um herói não ultrapassará um determinado tempo. Esta classe é executada numa Thread à parte, garantimos desta forma que nem o cliente nem o servidor bloqueiam o fluxo normal do programa. 
+
+\subsection{Game}
+A classe \textit{Game} contém as informações relativas ao Jogo. É aqui que é feita a seleção de herói, alteração do heroi e geração dos resultados do jogo. 
+
+\subsection{Hero}
+A classe \textit{Hero} contém os herois disponiveis para o jogo. 
+
+\subsection{User}
+A classe \textit{User} contém todas as informações necessárias relativas a um utilizador que pretende jogar. 
+
+\subsection{GameManager}
+A classe \textit{GameManager} é a classe responsável por armazenar os dados dos utilizadores, herois, jogos. É nesta classe que a maioria das ações solicitadas pelo servidor são efetuadas entre elas destaca-se a eleição da equipa e a criação do jogo. 

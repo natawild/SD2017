@@ -189,11 +189,11 @@ public class GameManager implements Serializable{
                     return user;
                 }
                 else {
-                   throw new InvalidCredentialsException("Cradenciais incorrectas"); 
+                   throw new InvalidCredentialsException("Credenciais incorrectas"); 
                 }
             }
             else {
-                throw new InvalidCredentialsException("Cradenciais incorrectas");
+                throw new InvalidCredentialsException("Credenciais incorrectas");
             }
         }
         finally{

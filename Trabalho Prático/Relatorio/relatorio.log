@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2017.3.9)  2 JAN 2018 11:30
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2017.3.9)  3 JAN 2018 19:47
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1517,41 +1517,88 @@ Cap\'{\i }tulo 1.
 
 ]
 Cap\'{\i }tulo 2.
-) (./chapters/parte2.tex [2
+LaTeX Font Info:    Font shape `T1/ptm/bx/n' in size <14.4> not available
+(Font)              Font shape `T1/ptm/b/n' tried instead on input line 4.
+[2
 
-]
+]) (./chapters/parte2.tex [3]
 Cap\'{\i }tulo 3.
-[3
+<imagem/CominicacaoServidorCliente.png, id=34, 543.02875pt x 379.4175pt>
+File: imagem/CominicacaoServidorCliente.png Graphic file (type png)
 
-]
+<use imagem/CominicacaoServidorCliente.png>
+Package pdftex.def Info: imagem/CominicacaoServidorCliente.png used on input li
+ne 9.
+(pdftex.def)             Requested size: 271.5137pt x 189.70828pt.
+LaTeX Font Info:    Font shape `T1/ptm/bx/n' in size <10.95> not available
+(Font)              Font shape `T1/ptm/b/n' tried instead on input line 10.
+ [4
+
+ <./imagem/CominicacaoServidorCliente.png>]
 Cap\'{\i }tulo 4.
-) (./chapters/parte3.tex [4
+[5
 
-]
+]) (./chapters/parte3.tex [6]
 Cap\'{\i }tulo 5.
-) (./chapters/conclusao.tex [5
+<imagem/menuInicial.png, id=46, 326.21875pt x 151.56625pt>
+File: imagem/menuInicial.png Graphic file (type png)
 
-]
+<use imagem/menuInicial.png>
+Package pdftex.def Info: imagem/menuInicial.png used on input line 11.
+(pdftex.def)             Requested size: 163.10896pt x 75.78293pt.
+
+<imagem/iniciarSessao.png, id=47, 338.26375pt x 177.66376pt>
+File: imagem/iniciarSessao.png Graphic file (type png)
+
+<use imagem/iniciarSessao.png>
+Package pdftex.def Info: imagem/iniciarSessao.png used on input line 19.
+(pdftex.def)             Requested size: 169.13145pt x 88.83165pt.
+
+<imagem/entrarNumaEquipa.png, id=48, 806.01125pt x 197.73875pt>
+File: imagem/entrarNumaEquipa.png Graphic file (type png)
+
+<use imagem/entrarNumaEquipa.png>
+Package pdftex.def Info: imagem/entrarNumaEquipa.png used on input line 28.
+(pdftex.def)             Requested size: 403.00464pt x 98.86913pt.
+ [7
+
+ <./imagem/menuInicial.png> <./imagem/iniciarSessao.png>]
+<imagem/menuEscolherHeroi.png, id=54, 444.66125pt x 127.47626pt>
+File: imagem/menuEscolherHeroi.png Graphic file (type png)
+
+<use imagem/menuEscolherHeroi.png>
+Package pdftex.def Info: imagem/menuEscolherHeroi.png used on input line 39.
+(pdftex.def)             Requested size: 222.33008pt x 63.73796pt.
+
+<imagem/jogoEfetuado.png, id=55, 611.28375pt x 198.7425pt>
+File: imagem/jogoEfetuado.png Graphic file (type png)
+
+<use imagem/jogoEfetuado.png>
+Package pdftex.def Info: imagem/jogoEfetuado.png used on input line 47.
+(pdftex.def)             Requested size: 305.64113pt x 99.371pt.
+) (./chapters/conclusao.tex [8 <./imagem/entrarNumaEquipa.png> <./imagem/menuEs
+colherHeroi.png> <./imagem/jogoEfetuado.png>]
 Cap\'{\i }tulo 6.
-) [6
+) [9
 
 ] (./relatorio.aux) ) 
 Here is how much of TeX's memory you used:
- 33544 strings out of 493014
- 785260 string characters out of 6133352
- 909530 words of memory out of 5000000
- 36541 multiletter control sequences out of 15000+600000
- 42148 words of font info for 50 fonts, out of 8000000 for 9000
+ 33606 strings out of 493014
+ 786645 string characters out of 6133352
+ 911590 words of memory out of 5000000
+ 36592 multiletter control sequences out of 15000+600000
+ 50602 words of font info for 56 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 62i,7n,83p,10415b,609s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 62i,8n,83p,10415b,609s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/local/texlive/2016/texmf-dist/fonts/enc/dvips/base/8
 r.enc}</usr/local/texlive/2016/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></us
 r/local/texlive/2016/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb></usr/local/t
-exlive/2016/texmf-dist/fonts/type1/urw/times/utmr8a.pfb>
-Output written on relatorio.pdf (9 pages, 884597 bytes).
+exlive/2016/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/201
+6/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
+Output written on relatorio.pdf (12 pages, 1084354 bytes).
 PDF statistics:
- 56 PDF objects out of 1000 (max. 8388607)
- 36 compressed objects within 1 object stream
+ 81 PDF objects out of 1000 (max. 8388607)
+ 45 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
- 33 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 63 words of extra memory for PDF output out of 10000 (max. 10000000)
 

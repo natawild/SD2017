@@ -364,7 +364,7 @@ public class Game implements Serializable {
             if(timeout == null){
                 //atualiza estado
                 timeout = false;
-                //acorda todas as thread que estão a espera de iniciae jogo
+                //acorda todas as thread que estão a espera de iniciar jogo
             }
         }finally{
             this.wantGameLock.unlock();

@@ -1,12 +1,13 @@
 \chapter{Conclusões }
 
-Com a realização deste trabalho pode-se concluir que ainda há aspetos a melhorar, tais como a apresentação dos menus, poder-se-ia ter melhorado a organização, por exemplo as estatisticas que são acedidas pelo administrador deviam ter um menu de introdução de estatisticas. 
+Com a realização deste trabalho foi possivel aplicar os conceitos e o conhecimento adquirido durante as aulas, pondo em prática grande parte daquilo que  foi transmitido. Tal como sabemos, os Sistemas Distribuídos têm como principal objetivo otimizar o desempenho de maneira que seja possível dividir tarefas e processá-las separadamente, promovendo assim paralelismo e reduzindo o tempo de execução.
+Sendo a escalabilidade um dos mais importantes aspetos de um Sistema Distribuído,
+um dos nossos principais objetivos foi promover a concorrência, usufruindo para isso
+da implementação de Threads. No entanto, ao mesmo tempo que promovemos a concorrência é necessário assegurar a fiabilidade dos dados através da implementação de
+exclusão mútua em seccões criticas, utilizando para isso os mecanismos adequados, tal
+como locks e variáveis de condição. 
 
+Consideramos que conseguimos implementar uma solução para o problema que utiliza o conceito de threads mas garante o correto funcionamento do programa, pois nas zonas criticas onde a concorrência não deve existir as técnicas de controlo de concorrência foram utilizadas. Tentamos também garantir que o programa não possibilitaria a ocorrência de \textit{deadLocks} e \textit{starvation}. Por exemplo para garantir que não ocorre \textit{starvation} na fase de formação de equipa tivemos o cuidado de utilizar uma lista para armazenar os jogadores que pretendem formar equipa. Conseguimos desta forma garantir que quando uma thread tenta formar equipa ela irá tentar usar os utilizadores que estão à mais tempo em espera consoante o ranking. 
 
-\section{Trabalho Futuro}
-
-Como trabalho futuro a aplicação poderá vir a permitir 
-
-
-
+Apesar disso sabemos que não conseguimos atingir uma solução ótima para o tempo de espera na fase de escolha do herói e que na fase de formação de equipa um cliente poderá ficar eternamente à espera por não ter jogadores do seu nivel para jogar. 
 
