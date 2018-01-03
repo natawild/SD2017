@@ -21,13 +21,22 @@ Cada thread tenta formar uma equipa com jogadores com o mesmo ranking, superior 
 
 Se a thread conseguir formar equipa, o estado dos elementos desse jogo é alterado por esta Thread e o estado deixa de ser à espera para formar equipa: \textit{setWaiting(false)} (invocando o método \textit{updateWaitingTeamStatus(team))} que muda o estado de toda a equipa) e de seguida são removidos todos os elementos da lista, pois já não estão à espera de equipa. Após efetuar estas ações a thread que conseguiu formar equipa acorda todas as threads que estavam a dormir (\textit{wantTeamCondition.signalAll();}) porque não tinham conseguido formar equipa. De todas as threads que estavam a dormir nesta condição (não tinham conseguido formar equipa) só irão prosseguir para jogo as que o seu estado (\textit{waiting=false}) foi alterado pela thread que conseguiu formar equipa, todas as outras irão voltar a adormecer.  
 
-A thread que formou equipa para além do descrito acima cria também o objeto \textit{Game} que contém toda a informação do jogo e  invoca a classe \textit{TimeOut} que será a responsável por limitar o tempo de escolha do herói por 30 segundos. 
+A thread que formou a partida para além do descrito acima cria também o objeto \textit{Game} que contém toda a informação do jogo (p.e. as duas equipas) e  invoca a classe \textit{TimeOut} que será a responsável por limitar o tempo de escolha do herói por 30 segundos. 
 
 \subsection{Problemas desta solução}
 Um problema desta solução é que se um jogador não conseguir uma equipa com jogadores com ranking semelhante ao dele irá ficar infinitamente à espera de equipa.
 
-
 \section{Seleção de herói}
+O objeto Game para além de ter as duas equipas e o estado da partida contém também duas coleções, cada uma delas com todos os heróis. Cada equipa irá usar somente  uma destas coleções para posteriormente cada elemento da respetiva equipa selecionar o herói. 
+Cada thread quando inicia o processo de seleção de herói, após pedir ao cliente o herói pretendido a thread irá tentar adquirir um \textit{lock} ao herói na coleção de heróis correspondente à equipa onde está. Após obter o \textit{lock} ao herói pretendido a thread irá usar uma variável de estado (\textit{used}) para saber se o herói já está a ser usado. Se não estiver a ser usado a thread irá alterar o estado desta variável para que um outro cliente da mesma equipa não possa utilizar esse herói. Para obter o lock ao herói na coleção estamos a utilizar o mecanismo \textit{synchronized} desta forma garantimos que se outro jogador da mesma equipa tentar selecionar um herói que não esteja a ser usado irá consegui faze-lo. Portanto as threads irão conseguir executar em paralelo desde que  os heróis selecionados sejam diferentes. Além disso garantimos também que se dois ou mais jogos estiverem a ocorrer em simultâneo, os vários jogadores poderão escolher heróis em comum, desde que os elementos da sua equipa não tenham escolhido esse herói. Tal facto é possivel pois as duas colecoes de heróis apesar de terem os mesmo heróis em todos os jogos, estas coleções são colonadas ou seja teem endereços diferentes e por isso o \textit{lock} de um herói é um \textit{lock} de um endereço diferente. 
+
+Após o processo acima descrito se foi possivel alterar a variável de estado do herói, a seleção foi efetuada com sucesso, o cliente irá receber uma mensagem avisando que a escolha foi efetuada com sucesso. Caso contrário o servidor irá informar o cliente que não foi possivel selecionar o herói uma vez que este já estava a ser utilizado por outro utilizador da equipa, e o utilizador deverá escolher um herói diferente.  
+
+\subsection{Alteração de herói }
+É um processo semelhante ao anterior, com a diferença de que neste caso é necessário adquirir dois \textit{locks}, um ao herói que já estava selecionado e outro ao herói que se pretende alterar. 
+
+
+\section{Confirmação de herói e Iniciação de jogo}
 
 Após o utilizador confirmar o seu herói ele irá validar se todos os outros elementos do jogo tem o herói também confirmado, se nem todos tiverem o herói confirmado e se o tempo limite do \textit{timeOut} não tiver chegado ao fim as threads irão adormcer numa fila de espera especifica para os utilizadores que esperam que toda e equipa tenha os herois selecionados. Caso todos os elementos do jogo tenham herói confirmado e o \textit{timeOut} não tiver sido excedido, esta thread irá alterar o estado do jogo \textit{timeout = false}, gera o resultado aleatório do jogo e acorda todas a threads que estão em fila à espera que todos os elementos da equipa tenham herói confirmado (\textit{this.wantGameCondition.signalAll()}). Apesar de acordarmos todas as threads que estão nesta fila só irão prosseguir para jogo as do jogo em questão, todas as outras irão voltar a adormecer. 
 

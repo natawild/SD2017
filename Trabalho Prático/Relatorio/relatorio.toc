@@ -17,8 +17,10 @@
 \contentsline {section}{\numberline {4.1}Forma\IeC {\c c}\IeC {\~a}o das equipas}{5}
 \contentsline {subsection}{\numberline {4.1.1}Problemas desta solu\IeC {\c c}\IeC {\~a}o}{5}
 \contentsline {section}{\numberline {4.2}Sele\IeC {\c c}\IeC {\~a}o de her\IeC {\'o}i}{5}
-\contentsline {section}{\numberline {4.3}Tempo m\IeC {\'a}ximo de sele\IeC {\c c}\IeC {\~a}o de her\IeC {\'o}i}{6}
-\contentsline {subsection}{\numberline {4.3.1}Problema desta solu\IeC {\c c}\IeC {\~a}o}{6}
-\contentsline {chapter}{\numberline {5}Funcionamento da Aplica\IeC {\c c}\IeC {\~a}o }{7}
-\contentsline {section}{\numberline {5.1}Menus }{7}
-\contentsline {chapter}{\numberline {6}Conclus\IeC {\~o}es }{9}
+\contentsline {subsection}{\numberline {4.2.1}Altera\IeC {\c c}\IeC {\~a}o de her\IeC {\'o}i }{6}
+\contentsline {section}{\numberline {4.3}Confirma\IeC {\c c}\IeC {\~a}o de her\IeC {\'o}i e Inicia\IeC {\c c}\IeC {\~a}o de jogo}{6}
+\contentsline {section}{\numberline {4.4}Tempo m\IeC {\'a}ximo de sele\IeC {\c c}\IeC {\~a}o de her\IeC {\'o}i}{6}
+\contentsline {subsection}{\numberline {4.4.1}Problema desta solu\IeC {\c c}\IeC {\~a}o}{7}
+\contentsline {chapter}{\numberline {5}Funcionamento da Aplica\IeC {\c c}\IeC {\~a}o }{8}
+\contentsline {section}{\numberline {5.1}Menus }{8}
+\contentsline {chapter}{\numberline {6}Conclus\IeC {\~o}es }{10}

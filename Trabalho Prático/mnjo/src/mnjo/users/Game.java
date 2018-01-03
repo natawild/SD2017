@@ -52,18 +52,7 @@ public class Game implements Serializable {
         this.wantGameLock = new ReentrantLock();
         this.wantGameCondition = wantGameLock.newCondition();
     }
-    
-    public Game(Game game) {
-        this.id = game.getId();
-        this.winner = game.getWinner();
-        this.teamA = game.getTeamA();
-        this.teamB = game.getTeamB();
-        this.heroesA = game.getHeroesA(); 
-        this.heroesB = game.getHeroesB(); 
-        this.timeout=game.getTimeout();
-        this.wantGameLock = game.getWantGameLock();
-        this.wantGameCondition = game.getWantGameCondition();
-    }
+
 
     public Boolean getTimeout() {
         return timeout;
@@ -72,24 +61,7 @@ public class Game implements Serializable {
     public void setTimeout(Boolean timeout) {
         this.timeout = timeout;
     }
-
     
-    public List<Hero> getHeroesA() {
-        return heroesA;
-    }
-
-    public void setHeroesA(List<Hero> heroesA) {
-        this.heroesA = heroesA;
-    }
-
-    public List<Hero> getHeroesB() {
-        return heroesB;
-    }
-
-    public void setHeroesB(List<Hero> heroesB) {
-        this.heroesB = heroesB;
-    }
-
     public int getId() {
         return id;
     }
@@ -111,16 +83,8 @@ public class Game implements Serializable {
         return teamA;
     }
 
-    public void setTeamA(List<User> teamA) {
-        this.teamA = teamA;
-    }
-
     public List<User> getTeamB() {
         return teamB;
-    }
-
-    public void setTeamB(List<User> teamB) {
-        this.teamB = teamB;
     }
 
     @Override

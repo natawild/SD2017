@@ -185,7 +185,7 @@ public class Client extends Thread{
         try {
             out.println("1");
             //ler heroies
-            ois.readObject();
+            in.readLine();
             //Enviar escolha do heroi
             out.println(Utils.generateRandom(0, 29));
             String message = in.readLine();
@@ -195,7 +195,7 @@ public class Client extends Thread{
                 out.println(Utils.generateRandom(0, 29));
                 message = in.readLine();
             }
-        } catch (IOException | ClassNotFoundException ex) {
+        } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, "Erro ao ler herois", ex);
         }
     }
@@ -204,8 +204,8 @@ public class Client extends Thread{
         out.println("3");     
         try {
            String myTeam = in.readLine();
-            List<User> myTeamList = createMyTeam(myTeam);
-            printMyTeam("A sua equipa é constituida por: ", myTeamList);
+           List<User> myTeamList = createMyTeam(myTeam);
+           printMyTeam("A sua equipa é constituida por: ", myTeamList);
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, "Erro ao tentar apresentar a equipa", ex);
         } 
@@ -471,7 +471,8 @@ public class Client extends Thread{
 
     private void chooseHero() {
         try {
-            List<Hero> heroes = (List<Hero>) ois.readObject();
+            String heroesString = in.readLine();
+            List<Hero> heroes = createHeroesList(heroesString);
             int i=0;
             System.out.println("Escolha um dos seguintes herois:");
             for(Hero h: heroes){
@@ -498,9 +499,7 @@ public class Client extends Thread{
             }
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, "Erro ao tentar ler a lista de herois", ex);
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, "Erro ao tentar ler a lista de heois", ex);
-        }
+        } 
     }
     
        public void heroMenu() throws IOException {
@@ -569,7 +568,9 @@ public class Client extends Thread{
     
     private void alternateHero() throws IOException {
         try {
-            List<Hero> heroes = (List<Hero>) ois.readObject();
+            
+            String heroesString = in.readLine();
+            List<Hero> heroes = createHeroesList(heroesString);
             int i=0;
             System.out.println("Escolha um dos seguintes herois:");
             for(Hero h: heroes){
@@ -597,9 +598,17 @@ public class Client extends Thread{
             }
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, "Erro ao tentar ler a lista de herois", ex);
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, "Erro ao tentar ler a lista de heois", ex);
+        } 
+    }
+
+    private List<Hero> createHeroesList(String heroesString) {
+        List<Hero> heroes = new ArrayList<>();
+        String[] heroesSplit = heroesString.split(";");
+        for(String hero: heroesSplit){
+            Hero h = new Hero(hero);
+            heroes.add(h);
         }
+        return heroes;
     }
 
     private void seeMyTeam() {

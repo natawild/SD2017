@@ -239,8 +239,9 @@ public class ServerThread extends Thread{
     
     private void chooseHero() throws IOException {
         List<Hero> heroes = gameManager.getHeroes(); 
-        try { 
-            oos.writeObject(heroes);
+        try {  
+            String heroesString = createHeroesString(heroes);
+            out.println(heroesString);
             boolean success = false;
             while(success == false){
                 String inHero = in.readLine(); 
@@ -327,8 +328,9 @@ public class ServerThread extends Thread{
     
     private void alternateHero() throws IOException {
         List<Hero> heroes = gameManager.getHeroes(); 
+        String heroesString = createHeroesString(heroes);
         try { 
-            oos.writeObject(heroes);
+            out.println(heroesString);
             boolean success = false;
             while(success == false){
                 String inHero = in.readLine(); 
@@ -346,6 +348,16 @@ public class ServerThread extends Thread{
         } catch (IOException ex) {
             Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, "Erro ao tentar enviar a lista de herois", ex);
         }
+    }
+
+    private String createHeroesString(List<Hero> heroes) {
+        StringBuilder sb = new StringBuilder();
+        for(Hero h: heroes){
+            sb.append(h.getName());
+            sb.append(";");
+        }
+        String heroesString = sb.toString();
+        return heroesString;
     }
 
     private void seeMyTeam() {

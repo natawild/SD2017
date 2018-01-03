@@ -18,7 +18,6 @@ import mnjo.client.Timeout;
 import mnjo.exceptions.DuplicatedUserException;
 import mnjo.exceptions.InvalidCredentialsException;
 import mnjo.server.MainServer;
-import mnjo.utils.Utils;
 
 /**
  *
@@ -35,7 +34,7 @@ public class GameManager implements Serializable{
     private List<Hero> heroes; 
     private ReentrantLock usersLock;
     private Map<Integer,List<User>> wantGame; 
-    private ReentrantLock wanTeamLock; 
+    private ReentrantLock wantTeamLock; 
     private Condition wantTeamCondition; 
     private int gameNumber;
     private Map<Integer, Game> games; 
@@ -46,22 +45,16 @@ public class GameManager implements Serializable{
         this.users = new HashMap<>();
         this.wantGame=new HashMap<>();
         this.usersLock = new ReentrantLock();
-        this.wanTeamLock = new ReentrantLock();
-        this.wantTeamCondition = wanTeamLock.newCondition(); 
+        this.wantTeamLock = new ReentrantLock();
+        this.wantTeamCondition = wantTeamLock.newCondition(); 
         this.gameNumber=1;
         this.games= new HashMap<>();
         this.heroes=new ArrayList<>(); 
         this.gamesLock = new ReentrantLock();
     }
-    
-    
 
-    public Map<Integer, Game> getGames() {
+     public Map<Integer, Game> getGames() {
         return games;
-    }
-
-    public void setGames(Map<Integer, Game> games) {
-        this.games = games;
     }
 
     synchronized public int getGameNumber() {
@@ -72,18 +65,9 @@ public class GameManager implements Serializable{
         this.gameNumber = gameNumber;
     }
     
-    public GameManager(Map<String, User> users) {
-        this.users = users;
-    }
-
     public Map<String, User> getUsers() {
         //Se fosse em POO tinhas que ter cuidado com isto que estas a fazer. Precisavas de devolver uma copia da lista e nao a propria lista (um clone do Map)
         return users;
-    }
-
-    public void setUsers(Map<String, User> users) {
-        //Mesma coisa que no getDb. Em POO devias primeiro criar uma copia do MAP e só depois fazer this.db = copia_da_db_passada_em_paramtro
-        this.users = users;
     }
 
     public List<Hero> getHeroes() {
@@ -96,18 +80,6 @@ public class GameManager implements Serializable{
             clonedList.add(h.clone());
         }
         return clonedList; 
-    }
-
-    public void setHeroes(List<Hero> heroes) {
-        this.heroes = heroes;
-    }
-
-    public Map<Integer, List<User>> getWantGame() {
-        return wantGame;
-    }
-
-    public void setWantGame(Map<Integer, List<User>> wantGame) {
-        this.wantGame = wantGame;
     }
     
     public void addHero (Hero hero){
@@ -202,17 +174,10 @@ public class GameManager implements Serializable{
         
     }
     
-    public void deleteUser(User user){
-        //TODO: CUidado com este codigo se tiveres varias thereds podes ter problemas. O que fazer aqui? :)
-        if(users.get(user.getUsername()) != null){
-            users.remove(user.getUsername());
-        }
-    }
-    
     //depois de adicionar o utilizador a esta lista devem ser acordadas as threads que 
     //estão á espera para formar equipa
-    private void addWantGamePlayer(User user){
-        this.wanTeamLock.lock();
+    public void addWantGamePlayer(User user){
+        this.wantTeamLock.lock();
         try{
         List<User> usersWithSameRate = this.wantGame.get(user.getRate()); 
         if(usersWithSameRate==null){
@@ -221,14 +186,14 @@ public class GameManager implements Serializable{
         }
         usersWithSameRate.add(user); 
         }finally{
-            this.wanTeamLock.unlock();
+            this.wantTeamLock.unlock();
         }        
     }
     
     public void findTeam(User user){
         List<User> team = new ArrayList<>(); 
         team.add(user);
-        this.wanTeamLock.lock();
+        this.wantTeamLock.lock();
         try{
             searchForTeam(user, team); 
             searchForTeamWithVariation(user, team, -1);
@@ -254,7 +219,7 @@ public class GameManager implements Serializable{
             Logger.getLogger(GameManager.class.getName()).log(Level.SEVERE, "Erro ao tentar adormecer Thread", ex);
         }        
         finally{
-            this.wanTeamLock.unlock();    
+            this.wantTeamLock.unlock();    
         }
     }
 
@@ -303,19 +268,11 @@ public class GameManager implements Serializable{
             }
         }
     }
-    
-    
-    public List<Hero> initHeroes (){
-        List listaHerois = new ArrayList();
-        heroes.forEach(listaHerois::add);
-        return listaHerois; 
-    }
 
     private Game saveTeam(List<User> team) {
         Game game =null;
         this.gamesLock.lock();
-        try{
-            
+        try{ 
             List<User> teamA = new ArrayList<>();  
             List<User> teamB = new ArrayList<>();  
 
@@ -333,29 +290,36 @@ public class GameManager implements Serializable{
         } finally{
             this.gamesLock.unlock();
         }
-        
-        return game;
-        
+        return game;  
     }
 
-   
     public void upateRate(User user) {
-        Game game = this.getGame(user.getGameId()); 
-        if(getMyTeam(game, user) == game.getWinner()){
-            user.upadteRate(9);
-        }
-        else {
-            user.upadteRate(0);
+        this.usersLock.lock();
+            try{
+            Game game = this.getGame(user.getGameId()); 
+            if(getMyTeam(game, user) == game.getWinner()){
+                user.upadteRate(9);
+            }
+            else {
+                user.upadteRate(0);
+            }
+        }finally{
+            this.usersLock.unlock();
         }
     }
     
     public boolean myTeamWin(User u){
-        Game game = this.getGame(u.getGameId()); 
-        if(getMyTeam(game, u) == game.getWinner()){
-            return true;
-        }
-        else {
-            return false;
+        this.gamesLock.lock();
+        try{
+            Game game = this.getGame(u.getGameId()); 
+            if(getMyTeam(game, u) == game.getWinner()){
+                return true;
+            }
+            else {
+                return false;
+            }
+        }finally{
+            this.gamesLock.unlock();
         }
     }
     

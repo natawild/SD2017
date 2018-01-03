@@ -52,6 +52,11 @@ public class Hero implements Serializable{
         this.used = null;
     }
     
+     public Hero(String name) {
+        this.name = name;
+        this.used = false;
+    }
+    
     public Hero(String name, boolean used) {
         this.name = name;
         this.used = used;

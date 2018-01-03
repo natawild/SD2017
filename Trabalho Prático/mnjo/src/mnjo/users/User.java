@@ -74,7 +74,7 @@ public class User implements Serializable{
     }
     
     
-    public User(String username, String password, Integer rate, boolean waiting, Integer gameId, Hero hero, int numberOfGames, int accumRate, int heroConfirmed) {
+    public User(String username, String password, Integer rate, boolean waiting, Integer gameId, Hero hero, int numberOfGames, int accumRate, boolean heroConfirmed) {
         this.username = username;
         this.password = password;
         this.rate = rate;
@@ -83,7 +83,7 @@ public class User implements Serializable{
         this.hero = hero;
         this.numberOfGames = numberOfGames;
         this.accumRate = accumRate;
-        this.heroConfirmed = this.heroConfirmed;
+        this.heroConfirmed = heroConfirmed;
     }
 
     public boolean isHeroConfirmed() {
