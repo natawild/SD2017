@@ -302,7 +302,6 @@ public class ServerThread extends Thread{
                 out.println("lose");
             }
         }
-        
         this.user.setHero(null);
         this.user.setWaiting(false);
         this.user.setGameId(null);

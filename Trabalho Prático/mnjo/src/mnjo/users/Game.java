@@ -226,6 +226,7 @@ public class Game implements Serializable {
 
     private boolean selectHero(List<User> team, List<Hero> heroes, User user, int indexHero) {
         boolean success = false;
+        //bloqueia apenas um heroi pelo indice 
         synchronized(heroes.get(indexHero)){
             if (heroes.get(indexHero).isUsed() == false) {
                 heroes.get(indexHero).setUsed(true);
@@ -259,13 +260,16 @@ public class Game implements Serializable {
     public void startGame(User user) {
         this.wantGameLock.lock();
         try{
+            //
             while(this.timeout == null && allUsersHaveHeroConfirmed(user) == false){
+                //confirmar que utilizador já tem heroi selecionado
                 updateHeroConfirmedStatus(user);
                 this.wantGameCondition.await();
             }
-            
+            //se não deu timeout e se o utilizador ainda não confimou heroi -> é o ultimo a confirmaar heroi
             if(this.timeout == null && user.isHeroConfirmed() == false){
                 valideGame();
+               //confirmar que utilizador já tem heroi selecionado
                 updateHeroConfirmedStatus(user);
                 this.winner = Utils.generateRandom(0, 1);;
                 this.wantGameCondition.signalAll();
@@ -314,7 +318,7 @@ public class Game implements Serializable {
             if(timeout == null){
                 //atualiza estado
                 timeout = true;
-                //acorda todas as thread que estão a espera de iniciae jogo
+                //acorda todas as thread que estão a espera de inicia e jogo
                 this.wantGameCondition.signalAll();
             }
         }finally{

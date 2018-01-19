@@ -294,7 +294,7 @@ public class Client extends Thread{
                     user= new User(username, password);
                 }
                 else {
-                    System.out.println("Cradencias erradas ou utilizador nao registado");
+                    System.out.println("Credencias erradas ou utilizador nao registado");
                     retryNumber++;
                 }
             } catch (IOException ex) {

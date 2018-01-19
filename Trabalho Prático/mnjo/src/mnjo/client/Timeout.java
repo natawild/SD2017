@@ -44,7 +44,7 @@ public class Timeout extends Thread {
     @Override
     public void run() {
         try {
-            Timeout.sleep(seconds * 1000);
+            this.sleep(seconds * 1000);
             game.abortGame();
         } catch (InterruptedException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, "Erro ao adormecer a thread ", ex);

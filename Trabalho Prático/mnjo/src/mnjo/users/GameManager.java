@@ -198,17 +198,24 @@ public class GameManager implements Serializable{
             searchForTeam(user, team); 
             searchForTeamWithVariation(user, team, -1);
             searchForTeamWithVariation(user, team, +1);
-   
-            if (isTeamFull(team)) {
+  
+                
+            if (isTeamFull(team)) { //se a equipa estiver preenchida -> utima thread (a que encontra ) ira executar este codigo
+                //altera o estado de cada jogador da equipa para não está espera de formar equipa
                 updateWaitingTeamStatus(team);  
+                //cria o objeto jogo e passa a equipa
                 Game game = saveTeam(team);
+                //remove os elementos da equipa que estavam à espera de formar equipa
                 removeTeamFromWaitingList(team);
+                //criar classe timeout 
                 Timeout timer = new Timeout(MainServer.TIMEOUT, game);
                 this.wantTeamCondition.signalAll();
                 timer.start();
             }
             else {
+                //adicionar jogador à lista que prentendem equipa
                 this.addWantGamePlayer(user);
+                //alterar o estado para à espera de encontrar equipa
                 user.setWaiting(true);
                 while(user.getWaiting()==true){
                     this.wantTeamCondition.await();
